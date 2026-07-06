@@ -375,9 +375,10 @@ public class HttpApiHandler extends SimpleChannelInboundHandler<FullHttpRequest>
             ctx.write(headers);
             ChannelFuture lastWrite;
             if (req.method().equals(io.netty.handler.codec.http.HttpMethod.HEAD)) {
-                lastWrite = ctx.writeAndFlush(io.netty.buffer.Unpooled.EMPTY_BUFFER);
+                lastWrite = ctx.writeAndFlush(io.netty.handler.codec.http.LastHttpContent.EMPTY_LAST_CONTENT);
             } else {
-                lastWrite = ctx.writeAndFlush(new ChunkedFile(raf, 0, fileLen, 8192));
+                ctx.write(new io.netty.channel.DefaultFileRegion(raf.getChannel(), 0, fileLen));
+                lastWrite = ctx.writeAndFlush(io.netty.handler.codec.http.LastHttpContent.EMPTY_LAST_CONTENT);
             }
             if (!keepAlive) {
                 lastWrite.addListener(ChannelFutureListener.CLOSE);

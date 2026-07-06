@@ -32,10 +32,30 @@ public class TutorialRoutes extends BaseRoute {
         }
         sendNocontent(ctx, req);
     }
+    private void handleFuncTutorial(ChannelHandlerContext ctx, FullHttpRequest req, String path) {
+        log.info(path);
+        UserEntity me = requireUser(req);
+        if (me != null) {
+            String title = getJsonBody(req).path("title").asText("");
+            if (!title.isEmpty()) {
+                java.util.List<com.fasterxml.jackson.databind.JsonNode> funcTutorials = com.emu.tqqserver.masterdata.MasterDataLoader.getList("func_tutorial.json");
+                for (com.fasterxml.jackson.databind.JsonNode node : funcTutorials) {
+                    if (title.equals(node.path("title").asText())) {
+                        int id = node.path("id").asInt();
+                        userService.addFuncTutorial(me.getUserId(), id);
+                        log.info("Saved func tutorial {} ({}) for user {}", title, id, me.getUserId());
+                        break;
+                    }
+                }
+            }
+        }
+        sendNocontent(ctx, req);
+    }
+
     @Route("/functutorial/done")
-    public void funcDone(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("functutorial/done"); sendNocontent(ctx, req); }
+    public void funcDone(ChannelHandlerContext ctx, FullHttpRequest req) { handleFuncTutorial(ctx, req, "functutorial/done"); }
     @Route("/functutorial/enhance")
-    public void funcEnhance(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("functutorial/enhance"); sendNocontent(ctx, req); }
+    public void funcEnhance(ChannelHandlerContext ctx, FullHttpRequest req) { handleFuncTutorial(ctx, req, "functutorial/enhance"); }
     @Route("/functutorial/appointment")
-    public void funcAppointment(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("functutorial/appointment"); sendNocontent(ctx, req); }
+    public void funcAppointment(ChannelHandlerContext ctx, FullHttpRequest req) { handleFuncTutorial(ctx, req, "functutorial/appointment"); }
 }

@@ -18,6 +18,7 @@ public class CommandManager {
         registerCommand(new AddJewelCommand());
         registerCommand(new AddPayJewelCommand());
         registerCommand(new AddItemCommand());
+        registerCommand(new GiveAllCommand());
     }
 
     public static CommandManager getInstance() {

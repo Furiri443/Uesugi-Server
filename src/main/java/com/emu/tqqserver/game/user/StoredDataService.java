@@ -23,11 +23,7 @@ public class StoredDataService {
 
                 com.emu.tqqserver.game.user.UnitDao unitDao = new com.emu.tqqserver.game.user.UnitDao();
                 java.util.List<com.emu.tqqserver.proto.pkg_puser.Unit> units = unitDao.getUnits(user.getUserId());
-                if (units.isEmpty()) {
-                        com.emu.tqqserver.game.user.UserService us = new com.emu.tqqserver.game.user.UserService();
-                        us.ensureDefaultUnit(user.getUserId());
-                        units = unitDao.getUnits(user.getUserId());
-                }
+
 
                 com.emu.tqqserver.game.user.MemberDao memberDao = new com.emu.tqqserver.game.user.MemberDao();
                 java.util.List<com.emu.tqqserver.proto.pkg_puser.Member> members = memberDao.getMembers(user.getUserId());
@@ -93,19 +89,12 @@ public class StoredDataService {
                                 .setHomeBackgroundId(user.getHomeBackgroundId() > 0 ? user.getHomeBackgroundId() : 10001)
                                 .build();
 
-                com.emu.tqqserver.proto.pkg_puser.HomeActor homeActor1 = com.emu.tqqserver.proto.pkg_puser.HomeActor.newBuilder()
-                                .setUid((int) user.getUserId()).setCharacterId(1).setModelKindId(1).setClothesId(1001).setFacialPresetId(0).setPosition(0).build();
-                com.emu.tqqserver.proto.pkg_puser.HomeActor homeActor2 = com.emu.tqqserver.proto.pkg_puser.HomeActor.newBuilder()
-                                .setUid((int) user.getUserId()).setCharacterId(2).setModelKindId(1).setClothesId(1002).setFacialPresetId(0).setPosition(1).build();
-                com.emu.tqqserver.proto.pkg_puser.HomeActor homeActor3 = com.emu.tqqserver.proto.pkg_puser.HomeActor.newBuilder()
-                                .setUid((int) user.getUserId()).setCharacterId(3).setModelKindId(1).setClothesId(1003).setFacialPresetId(0).setPosition(2).build();
-                com.emu.tqqserver.proto.pkg_puser.HomeActor homeActor4 = com.emu.tqqserver.proto.pkg_puser.HomeActor.newBuilder()
-                                .setUid((int) user.getUserId()).setCharacterId(4).setModelKindId(1).setClothesId(1004).setFacialPresetId(0).setPosition(3).build();
-                com.emu.tqqserver.proto.pkg_puser.HomeActor homeActor5 = com.emu.tqqserver.proto.pkg_puser.HomeActor.newBuilder()
-                                .setUid((int) user.getUserId()).setCharacterId(5).setModelKindId(1).setClothesId(1005).setFacialPresetId(0).setPosition(4).build();
+                com.emu.tqqserver.game.home.HomeService homeService = new com.emu.tqqserver.game.home.HomeService();
+                java.util.List<com.emu.tqqserver.proto.pkg_puser.HomeActor> homeActors = homeService.getHomeActors(user.getUserId());
 
                 StoredData.Builder builder = StoredData.newBuilder()
                                 .setUser(protoUser)
+                                .addAllHomeActor(homeActors)
                                 .setCurrency(currency)
                                 .addAllUnit(units)
                                 .addAllMember(members)
@@ -113,19 +102,57 @@ public class StoredDataService {
                                 .addStage(stageBuilder.build())
                                 .setWork(work)
                                 .setMileage(mileage)
-                                .setOptions(options)
-                                .addHomeBackground(homeBg)
-                                                                .setReview(0)
+                                .setOptions(options);
+                                
+                UserService userService = new UserService();
+                java.util.List<Integer> bgIds = userService.getHomeBackgrounds(user.getUserId());
+                if (bgIds.isEmpty()) {
+                    builder.addHomeBackground(com.emu.tqqserver.proto.pkg_puser.HomeBackground.newBuilder()
+                            .setUid((int) user.getUserId())
+                            .setHomeBackgroundId(user.getHomeBackgroundId() > 0 ? user.getHomeBackgroundId() : 10001)
+                            .build());
+                } else {
+                    for (int bgId : bgIds) {
+                        builder.addHomeBackground(com.emu.tqqserver.proto.pkg_puser.HomeBackground.newBuilder()
+                                .setUid((int) user.getUserId())
+                                .setHomeBackgroundId(bgId)
+                                .build());
+                    }
+                }
+
+                java.util.List<Integer> clothesIds = userService.getClothes(user.getUserId());
+                java.util.List<com.fasterxml.jackson.databind.JsonNode> masterClothes = com.emu.tqqserver.masterdata.MasterDataLoader.getList("home_member_clothes.json");
+                java.util.Map<Integer, com.fasterxml.jackson.databind.JsonNode> clothesMap = new java.util.HashMap<>();
+                for (com.fasterxml.jackson.databind.JsonNode node : masterClothes) {
+                    clothesMap.put(node.path("id").asInt(), node);
+                }
+                for (int clothesId : clothesIds) {
+                    com.fasterxml.jackson.databind.JsonNode node = clothesMap.get(clothesId);
+                    if (node != null) {
+                        builder.addHomeMemberClothes(com.emu.tqqserver.proto.pkg_pmaster.HomeMemberClothes.newBuilder()
+                                .setId(clothesId)
+                                .setMemberId(node.path("member_id").asInt())
+                                .setCardId(node.path("card_id").asInt())
+                                .setName(node.path("name").asText())
+                                .setType(node.path("type").asInt())
+                                .setThumbnailResourceId(node.path("thumbnail_resource_id").asInt())
+                                .setIsDefault(node.path("is_default").asInt())
+                                .build());
+                    }
+                }
+
+                java.util.List<Integer> funcTutorialIds = userService.getFuncTutorials(user.getUserId());
+                builder.addAllFuncTutorialIds(funcTutorialIds);
+                builder.setReview(0)
                                 .setPresentCount(0)
                                 .setNewsLatestId(0)
                                 .setNewsUnreadCount(0)
                                 .setLoginBonusFlag(0)
                                 .setReceivedGreetingCount(0)
-                                .addAllHomeActor(homeService.getHomeActors(user.getUserId()))
                                 .setFriendApprovalCount(0)
                                 .setFriendCanGreetingCount(0);
 
-                UserService userService = new UserService();
+
                 java.util.List<Integer> userCards = userService.getUserCards(user.getUserId());
                 for (int cardId : userCards) {
                     builder.addCard(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()

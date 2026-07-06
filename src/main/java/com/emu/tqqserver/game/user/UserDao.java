@@ -15,6 +15,93 @@ import java.util.List;
 public class UserDao extends BaseDao {
     private static final Logger log = LoggerFactory.getLogger(UserDao.class);
 
+    public void addFuncTutorial(long userId, int tutorialId) {
+        String sql = "INSERT OR IGNORE INTO user_functutorials (user_id, tutorial_id) VALUES (?, ?)";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, tutorialId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to add func tutorial", e);
+        }
+    }
+
+    public java.util.List<Integer> getFuncTutorials(long userId) {
+        java.util.List<Integer> list = new java.util.ArrayList<>();
+        String sql = "SELECT tutorial_id FROM user_functutorials WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getInt("tutorial_id"));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get func tutorials", e);
+        }
+        return list;
+    }
+
+    public void addHomeBackground(long userId, int bgId) {
+        String sql = "INSERT OR IGNORE INTO user_home_backgrounds (user_id, bg_id) VALUES (?, ?)";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, bgId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to add home background", e);
+        }
+    }
+
+    public java.util.List<Integer> getHomeBackgrounds(long userId) {
+        java.util.List<Integer> list = new java.util.ArrayList<>();
+        String sql = "SELECT bg_id FROM user_home_backgrounds WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getInt("bg_id"));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get home backgrounds", e);
+        }
+        return list;
+    }
+
+    public void addClothes(long userId, int clothesId) {
+        String sql = "INSERT OR IGNORE INTO user_clothes (user_id, clothes_id) VALUES (?, ?)";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, clothesId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to add clothes", e);
+        }
+    }
+
+    public java.util.List<Integer> getClothes(long userId) {
+        java.util.List<Integer> list = new java.util.ArrayList<>();
+        String sql = "SELECT clothes_id FROM user_clothes WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getInt("clothes_id"));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get clothes", e);
+        }
+        return list;
+    }
+
     public UserEntity findById(long userId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE user_id = ?")) {

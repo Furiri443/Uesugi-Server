@@ -76,8 +76,12 @@ public class GachaRoutes extends BaseRoute {
 
         try {
             new com.emu.tqqserver.game.user.UserDao().ensureDefaultCards(user.getUserId(), drawnCards);
+            com.emu.tqqserver.game.gacha.GachaDao gachaDao = new com.emu.tqqserver.game.gacha.GachaDao();
+            for (int cardId : drawnCards) {
+                gachaDao.logGacha(user.getUserId(), gachaId, cardId, 3); // Default rarity 3 for now
+            }
         } catch (Exception e) {
-            log.error("Failed to insert cards", e);
+            log.error("Failed to insert cards and logs", e);
         }
             
         resultBuilder.setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(user));

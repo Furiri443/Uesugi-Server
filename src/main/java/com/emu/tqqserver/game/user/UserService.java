@@ -56,6 +56,30 @@ public class UserService {
         memberDao.initializeMembers(userId);
     }
 
+    public void addHomeBackground(long userId, int bgId) {
+        userDao.addHomeBackground(userId, bgId);
+    }
+
+    public void addClothes(long userId, int clothesId) {
+        userDao.addClothes(userId, clothesId);
+    }
+
+    public List<Integer> getHomeBackgrounds(long userId) {
+        return userDao.getHomeBackgrounds(userId);
+    }
+
+    public List<Integer> getClothes(long userId) {
+        return userDao.getClothes(userId);
+    }
+
+    public void addFuncTutorial(long userId, int tutorialId) {
+        userDao.addFuncTutorial(userId, tutorialId);
+    }
+
+    public List<Integer> getFuncTutorials(long userId) {
+        return userDao.getFuncTutorials(userId);
+    }
+
     public void ensureDefaultCards(long userId) {
         java.util.List<Integer> defaultCardsList = com.emu.tqqserver.game.GameContext.getInstance().getConfig().getGameDefaults().getDefaultCards();
         int[] defaultCards = defaultCardsList.stream().mapToInt(i -> i).toArray();
@@ -174,7 +198,7 @@ public class UserService {
     
     public void deleteUser(long userId) {
         try (java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection()) {
-            String[] tables = {"user_cards", "user_items", "user_stamina", "user_blocks", "user_friends", "user_presents", "user_stories", "user_home_actors", "user_stages", "users"};
+            String[] tables = {"user_units", "user_members", "user_cards", "user_items", "user_stamina", "user_blocks", "user_friends", "user_presents", "user_stories", "user_home_actors", "user_stages", "user_home_backgrounds", "user_clothes", "user_functutorials", "users"};
             for(String t : tables) {
                 try(java.sql.PreparedStatement ps = conn.prepareStatement("DELETE FROM " + t + " WHERE user_id = ?")) {
                     ps.setLong(1, userId);

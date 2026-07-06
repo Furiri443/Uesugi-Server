@@ -152,7 +152,11 @@ public class UserRoutes extends BaseRoute {
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
             com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
-            String nickname = body.has("nickname") ? body.get("nickname").asText() : "";
+            String nickname = "";
+            if (body.has("nickname")) nickname = body.get("nickname").asText();
+            else if (body.has("name")) nickname = body.get("name").asText();
+            else if (body.size() > 0) nickname = body.elements().next().asText();
+            
             if (!nickname.isEmpty()) {
                 userService.updateNickname(userId, nickname);
             }
@@ -182,7 +186,12 @@ public class UserRoutes extends BaseRoute {
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
             com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
-            int bgId = body.has("bg_id") ? body.get("bg_id").asInt() : 0;
+            int bgId = 0;
+            if (body.has("bg_id")) bgId = body.get("bg_id").asInt();
+            else if (body.has("background_id")) bgId = body.get("background_id").asInt();
+            else if (body.has("id")) bgId = body.get("id").asInt();
+            else if (body.size() > 0) bgId = body.elements().next().asInt();
+            
             if (bgId > 0) {
                 userService.updateBackground(userId, bgId);
                 com.emu.tqqserver.game.home.HomeService homeService = new com.emu.tqqserver.game.home.HomeService();
@@ -250,7 +259,12 @@ public class UserRoutes extends BaseRoute {
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
             com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
-            int bgId = body.has("bg_id") ? body.get("bg_id").asInt() : 0;
+            int bgId = 0;
+            if (body.has("bg_id")) bgId = body.get("bg_id").asInt();
+            else if (body.has("background_id")) bgId = body.get("background_id").asInt();
+            else if (body.has("id")) bgId = body.get("id").asInt();
+            else if (body.size() > 0) bgId = body.elements().next().asInt();
+            
             if (bgId > 0) {
                 userService.updateBackground(userId, bgId);
             }

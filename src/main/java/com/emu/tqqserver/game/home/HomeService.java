@@ -41,11 +41,6 @@ public class HomeService {
                             .setModelKindId(rs.getInt("model_kind_id"))
                             .setClothesId(rs.getInt("clothes_id"))
                             .setPosition(rs.getInt("position"))
-                            .setBodyTapReaction(1)
-                            .setBodyTapMotion1(111)
-                            .setFaceTapReaction(1)
-                            .setFaceTapMotion1(110)
-                            .setFaceTapMotion2(9710)
                             .build();
                     actors.add(actor);
                 }
@@ -55,19 +50,15 @@ public class HomeService {
         }
         
         if (actors.isEmpty()) {
+            int[] defaultClothes = {0, 11, 142, 153, 144, 145};
             // Default quintuplets
             for (int i = 1; i <= 5; i++) {
                 actors.add(HomeActor.newBuilder()
                         .setUid((int) userId)
                         .setCharacterId(i)
                         .setModelKindId(1)
-                        .setClothesId(570 + i)
+                        .setClothesId(defaultClothes[i])
                         .setPosition(i - 1)
-                        .setBodyTapReaction(1)
-                        .setBodyTapMotion1(111)
-                        .setFaceTapReaction(1)
-                        .setFaceTapMotion1(110)
-                        .setFaceTapMotion2(9710)
                         .build());
             }
         }
