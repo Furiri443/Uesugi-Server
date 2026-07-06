@@ -149,6 +149,23 @@ public class UserDao extends BaseDao {
         }
     }
 
+    public void updateOptions(long userId, int bgm, int se, int voice, int protectCardR6, int protectCardR5, int protectCardFirst) {
+        String sql = "UPDATE users SET option_bgm = ?, option_se = ?, option_voice = ?, option_protect_card_r6 = ?, option_protect_card_r5 = ?, option_protect_card_first = ? WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bgm);
+            ps.setInt(2, se);
+            ps.setInt(3, voice);
+            ps.setInt(4, protectCardR6);
+            ps.setInt(5, protectCardR5);
+            ps.setInt(6, protectCardFirst);
+            ps.setLong(7, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("updateOptions failed", e);
+        }
+    }
+
     public void initializeStamina(long userId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO user_stamina (user_id) VALUES (?)")) {
@@ -223,6 +240,12 @@ public class UserDao extends BaseDao {
         u.setPlayerTitleId(rs.getInt("player_title_id"));
         u.setPlayerTitleTargetId(rs.getInt("player_title_target_id"));
         u.setDailyRewardReceivedAt(rs.getInt("daily_reward_received_at"));
+        try { u.setOptionBgm(rs.getInt("option_bgm")); } catch (SQLException ignored) {}
+        try { u.setOptionSe(rs.getInt("option_se")); } catch (SQLException ignored) {}
+        try { u.setOptionVoice(rs.getInt("option_voice")); } catch (SQLException ignored) {}
+        try { u.setOptionProtectCardR6(rs.getInt("option_protect_card_r6")); } catch (SQLException ignored) {}
+        try { u.setOptionProtectCardR5(rs.getInt("option_protect_card_r5")); } catch (SQLException ignored) {}
+        try { u.setOptionProtectCardFirst(rs.getInt("option_protect_card_first")); } catch (SQLException ignored) {}
         u.setNewUser(isNew);
         return u;
     }

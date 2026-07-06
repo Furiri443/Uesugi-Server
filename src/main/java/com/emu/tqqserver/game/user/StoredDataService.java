@@ -21,48 +21,43 @@ public class StoredDataService {
                 User protoUser = user.toProto();
                 Currency currency = user.toCurrencyProto();
 
-                java.util.List<Integer> defaultUnitCards = com.emu.tqqserver.game.GameContext.getInstance()
-                        .getConfig().getGameDefaults().getDefaultUnitCards();
+                com.emu.tqqserver.game.user.UnitDao unitDao = new com.emu.tqqserver.game.user.UnitDao();
+                java.util.List<com.emu.tqqserver.proto.pkg_puser.Unit> units = unitDao.getUnits(user.getUserId());
+                if (units.isEmpty()) {
+                        com.emu.tqqserver.game.user.UserService us = new com.emu.tqqserver.game.user.UserService();
+                        us.ensureDefaultUnit(user.getUserId());
+                        units = unitDao.getUnits(user.getUserId());
+                }
 
-                com.emu.tqqserver.proto.pkg_puser.Unit unit = com.emu.tqqserver.proto.pkg_puser.Unit.newBuilder()
-                                .setUid((int) user.getUserId())
-                                .setIdx(1)
-                                .setUnitName("Team 1")
-                                .setMemberId1(1)
-                                .setMemberId2(2)
-                                .setMemberId3(3)
-                                .setMemberId4(4)
-                                .setMemberId5(5)
-                                .setCardId1(defaultUnitCards.size() > 0 ? defaultUnitCards.get(0) : 99901)
-                                .setCardId2(defaultUnitCards.size() > 1 ? defaultUnitCards.get(1) : 99902)
-                                .setCardId3(defaultUnitCards.size() > 2 ? defaultUnitCards.get(2) : 99903)
-                                .setCardId4(defaultUnitCards.size() > 3 ? defaultUnitCards.get(3) : 99904)
-                                .setCardId5(defaultUnitCards.size() > 4 ? defaultUnitCards.get(4) : 99905)
-                                .build();
+                com.emu.tqqserver.game.user.MemberDao memberDao = new com.emu.tqqserver.game.user.MemberDao();
+                java.util.List<com.emu.tqqserver.proto.pkg_puser.Member> members = memberDao.getMembers(user.getUserId());
+                if (members.isEmpty()) {
+                        memberDao.initializeMembers(user.getUserId());
+                        members = memberDao.getMembers(user.getUserId());
+                }
 
-                com.emu.tqqserver.proto.pkg_puser.Member member1 = com.emu.tqqserver.proto.pkg_puser.Member.newBuilder()
-                                .setUid((int) user.getUserId()).setMemberId(1).setDearlevel(1).build();
-                com.emu.tqqserver.proto.pkg_puser.Member member2 = com.emu.tqqserver.proto.pkg_puser.Member.newBuilder()
-                                .setUid((int) user.getUserId()).setMemberId(2).setDearlevel(1).build();
-                com.emu.tqqserver.proto.pkg_puser.Member member3 = com.emu.tqqserver.proto.pkg_puser.Member.newBuilder()
-                                .setUid((int) user.getUserId()).setMemberId(3).setDearlevel(1).build();
-                com.emu.tqqserver.proto.pkg_puser.Member member4 = com.emu.tqqserver.proto.pkg_puser.Member.newBuilder()
-                                .setUid((int) user.getUserId()).setMemberId(4).setDearlevel(1).build();
-                com.emu.tqqserver.proto.pkg_puser.Member member5 = com.emu.tqqserver.proto.pkg_puser.Member.newBuilder()
-                                .setUid((int) user.getUserId()).setMemberId(5).setDearlevel(1).build();
-
-                com.emu.tqqserver.proto.pkg_puser.Chapter chapter = com.emu.tqqserver.proto.pkg_puser.Chapter
+                com.emu.tqqserver.proto.pkg_puser.Chapter.Builder chapterBuilder = com.emu.tqqserver.proto.pkg_puser.Chapter
                                 .newBuilder()
                                 .setUid((int) user.getUserId())
-                                .setChapterId(1)
-                                .setStatus(1)
-                                .build();
+                                .setStatus(1);
+                                
+                java.util.List<com.fasterxml.jackson.databind.JsonNode> chapters = com.emu.tqqserver.masterdata.MasterDataLoader.getList("chapter.json");
+                if (!chapters.isEmpty()) {
+                        chapterBuilder.setChapterId(chapters.get(0).get("id").asInt());
+                } else {
+                        chapterBuilder.setChapterId(1);
+                }
 
-                com.emu.tqqserver.proto.pkg_puser.Stage stage = com.emu.tqqserver.proto.pkg_puser.Stage.newBuilder()
+                com.emu.tqqserver.proto.pkg_puser.Stage.Builder stageBuilder = com.emu.tqqserver.proto.pkg_puser.Stage.newBuilder()
                                 .setUid((int) user.getUserId())
-                                .setStageId(1)
-                                .setRank(3)
-                                .build();
+                                .setRank(3);
+                                
+                java.util.List<com.fasterxml.jackson.databind.JsonNode> stages = com.emu.tqqserver.masterdata.MasterDataLoader.getList("stage.json");
+                if (!stages.isEmpty()) {
+                        stageBuilder.setStageId(stages.get(0).get("id").asInt());
+                } else {
+                        stageBuilder.setStageId(1);
+                }
 
                 com.emu.tqqserver.proto.pkg_pmisc.Work work = com.emu.tqqserver.proto.pkg_pmisc.Work.newBuilder()
                                 .setUid((int) user.getUserId())
@@ -84,12 +79,12 @@ public class StoredDataService {
                 com.emu.tqqserver.proto.pkg_puser.Options options = com.emu.tqqserver.proto.pkg_puser.Options
                                 .newBuilder()
                                 .setUid((int) user.getUserId())
-                                .setBgm(10)
-                                .setSe(10)
-                                .setVoice(10)
-                                .setProtectCardR6(1)
-                                .setProtectCardR5(1)
-                                .setProtectCardFirst(1)
+                                .setBgm(user.getOptionBgm())
+                                .setSe(user.getOptionSe())
+                                .setVoice(user.getOptionVoice())
+                                .setProtectCardR6(user.getOptionProtectCardR6())
+                                .setProtectCardR5(user.getOptionProtectCardR5())
+                                .setProtectCardFirst(user.getOptionProtectCardFirst())
                                 .build();
 
                 com.emu.tqqserver.proto.pkg_puser.HomeBackground homeBg = com.emu.tqqserver.proto.pkg_puser.HomeBackground
@@ -112,10 +107,10 @@ public class StoredDataService {
                 StoredData.Builder builder = StoredData.newBuilder()
                                 .setUser(protoUser)
                                 .setCurrency(currency)
-                                .addUnit(unit)
-                                .addMember(member1).addMember(member2).addMember(member3).addMember(member4).addMember(member5)
-                                .addChapter(chapter)
-                                .addStage(stage)
+                                .addAllUnit(units)
+                                .addAllMember(members)
+                                .addChapter(chapterBuilder.build())
+                                .addStage(stageBuilder.build())
                                 .setWork(work)
                                 .setMileage(mileage)
                                 .setOptions(options)

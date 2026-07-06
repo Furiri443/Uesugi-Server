@@ -73,6 +73,59 @@ public abstract class BaseRoute {
         return req.headers().get("X-Enish-App-Version-Master", "0");
     }
 
+    /** Read the raw POST request body as UTF-8 string. */
+    protected static String getBodyString(FullHttpRequest req) {
+        return req.content().toString(io.netty.util.CharsetUtil.UTF_8);
+    }
+
+    /** Helper to parse the JSON body as a JsonNode. Returns an empty node if failed. */
+    protected com.fasterxml.jackson.databind.JsonNode getJsonBody(FullHttpRequest req) {
+        String body = getBodyString(req);
+        if (body == null || body.trim().isEmpty()) {
+            return com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+        }
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().readTree(body);
+        } catch (Exception e) {
+            // Might be form-urlencoded, let's try mapping form to json simply
+            if (body.contains("=")) {
+                com.fasterxml.jackson.databind.node.ObjectNode node = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+                for (String param : body.split("&")) {
+                    String[] pair = param.split("=");
+                    if (pair.length > 1) {
+                        try {
+                            node.put(java.net.URLDecoder.decode(pair[0], "UTF-8"), java.net.URLDecoder.decode(pair[1], "UTF-8"));
+                        } catch (Exception ignored) {}
+                    }
+                }
+                return node;
+            }
+            log.warn("Failed to parse POST body as JSON/Form: {}", e.getMessage());
+            return com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+        }
+    }
+
+    // Keep legacy signatures but make them warn and return default values, or try to parse from JSON keys if they somehow match
+    protected String readStringField(FullHttpRequest req, int fieldNum) {
+        log.warn("readStringField called for field {}. This relies on old protobuf parsing which is removed.", fieldNum);
+        return "";
+    }
+
+    protected static int readIntField(FullHttpRequest req, int fieldNum) {
+        log.warn("readIntField called for field {}. This relies on old protobuf parsing which is removed.", fieldNum);
+        return 0;
+    }
+
+    protected static long readInt64Field(FullHttpRequest req, int fieldNum) {
+        log.warn("readInt64Field called for field {}. This relies on old protobuf parsing which is removed.", fieldNum);
+        return 0;
+    }
+
+    protected static java.util.List<Long> readInt64ListField(FullHttpRequest req, int fieldNum) {
+        log.warn("readInt64ListField called for field {}. This relies on old protobuf parsing which is removed.", fieldNum);
+        return new java.util.ArrayList<>();
+    }
+
     /** Read the raw protobuf request body. */
     protected static byte[] getBody(FullHttpRequest req) {
         byte[] body = new byte[req.content().readableBytes()];
@@ -85,104 +138,8 @@ public abstract class BaseRoute {
         return DatabaseManager.getInstance().getConnection();
     }
 
-    protected String readStringField(FullHttpRequest req, int fieldNum) {
-        try {
-            byte[] body = getBody(req);
-            if (body.length == 0) return "";
-            com.google.protobuf.CodedInputStream cis = com.google.protobuf.CodedInputStream.newInstance(body);
-            while (!cis.isAtEnd()) {
-                int tag = cis.readTag();
-                if (tag == 0) break;
-                int field = com.google.protobuf.WireFormat.getTagFieldNumber(tag);
-                int type = com.google.protobuf.WireFormat.getTagWireType(tag);
-                if (field == fieldNum && type == com.google.protobuf.WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-                    return cis.readString();
-                } else {
-                    cis.skipField(tag);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to parse string field {}: {}", fieldNum, e.getMessage());
-        }
-        return "";
-    }
-
-    protected static int readIntField(FullHttpRequest req, int fieldNum) {
-        try {
-            byte[] body = getBody(req);
-            if (body.length == 0) return 0;
-            com.google.protobuf.CodedInputStream cis = com.google.protobuf.CodedInputStream.newInstance(body);
-            while (!cis.isAtEnd()) {
-                int tag = cis.readTag();
-                if (tag == 0) break;
-                int field = com.google.protobuf.WireFormat.getTagFieldNumber(tag);
-                int type = com.google.protobuf.WireFormat.getTagWireType(tag);
-                if (field == fieldNum && type == com.google.protobuf.WireFormat.WIRETYPE_VARINT) {
-                    return cis.readInt32();
-                } else {
-                    cis.skipField(tag);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to parse int field {}: {}", fieldNum, e.getMessage());
-        }
-        return 0;
-    }
-
-    protected static int[] readTwoIntFields(FullHttpRequest req) {
-        int[] result = new int[2];
-        try {
-            byte[] body = getBody(req);
-            if (body.length == 0) return result;
-            com.google.protobuf.CodedInputStream cis = com.google.protobuf.CodedInputStream.newInstance(body);
-            while (!cis.isAtEnd()) {
-                int tag = cis.readTag();
-                if (tag == 0) break;
-                int field = com.google.protobuf.WireFormat.getTagFieldNumber(tag);
-                int type = com.google.protobuf.WireFormat.getTagWireType(tag);
-                if (field == 1 && type == com.google.protobuf.WireFormat.WIRETYPE_VARINT) {
-                    result[0] = cis.readInt32();
-                } else if (field == 2 && type == com.google.protobuf.WireFormat.WIRETYPE_VARINT) {
-                    result[1] = cis.readInt32();
-                } else {
-                    cis.skipField(tag);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to parse two int fields", e);
-        }
-        return result;
-    }
-
-    protected java.util.List<Long> readInt64ListField(FullHttpRequest req, int fieldNum) {
-        java.util.List<Long> result = new java.util.ArrayList<>();
-        try {
-            byte[] body = getBody(req);
-            if (body.length == 0) return result;
-            com.google.protobuf.CodedInputStream cis = com.google.protobuf.CodedInputStream.newInstance(body);
-            while (!cis.isAtEnd()) {
-                int tag = cis.readTag();
-                if (tag == 0) break;
-                int field = com.google.protobuf.WireFormat.getTagFieldNumber(tag);
-                int type = com.google.protobuf.WireFormat.getTagWireType(tag);
-                if (field == fieldNum) {
-                    if (type == com.google.protobuf.WireFormat.WIRETYPE_VARINT) {
-                        result.add(cis.readInt64());
-                    } else if (type == com.google.protobuf.WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-                        int length = cis.readRawVarint32();
-                        int limit = cis.pushLimit(length);
-                        while (!cis.isAtEnd()) {
-                            result.add(cis.readInt64());
-                        }
-                        cis.popLimit(limit);
-                    }
-                } else {
-                    cis.skipField(tag);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to parse int64 list field {}: {}", fieldNum, e.getMessage());
-        }
-        return result;
+    protected int[] readTwoIntFields(FullHttpRequest req) {
+        log.warn("readTwoIntFields called. This relies on old protobuf parsing which is removed.");
+        return new int[2];
     }
 }

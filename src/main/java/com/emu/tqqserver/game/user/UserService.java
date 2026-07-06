@@ -21,6 +21,8 @@ public class UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserDao userDao = new UserDao();
+    private final UnitDao unitDao = new UnitDao();
+    private final MemberDao memberDao = new MemberDao();
 
     /** Find existing user by userId, or create a placeholder if not found */
     public UserEntity findOrCreate(long userId, String platformType) {
@@ -50,12 +52,19 @@ public class UserService {
     private void initializeUserData(long userId) {
         userDao.initializeStamina(userId);
         ensureDefaultCards(userId);
+        ensureDefaultUnit(userId);
+        memberDao.initializeMembers(userId);
     }
 
     public void ensureDefaultCards(long userId) {
         java.util.List<Integer> defaultCardsList = com.emu.tqqserver.game.GameContext.getInstance().getConfig().getGameDefaults().getDefaultCards();
         int[] defaultCards = defaultCardsList.stream().mapToInt(i -> i).toArray();
         userDao.ensureDefaultCards(userId, defaultCards);
+    }
+
+    public void ensureDefaultUnit(long userId) {
+        java.util.List<Integer> defaultUnitCards = com.emu.tqqserver.game.GameContext.getInstance().getConfig().getGameDefaults().getDefaultUnitCards();
+        unitDao.createDefaultUnit(userId, defaultUnitCards);
     }
 
     public List<Integer> getUserCards(long userId) {

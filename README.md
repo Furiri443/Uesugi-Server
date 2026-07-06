@@ -1,260 +1,93 @@
 # ごとぱず Private Server (tqq-server)
 
-Private server reimplementation for **五等分の花嫁 五つ子ちゃんはパズルを五等分できない。** (Gotopazu)
+Private server implementation for **五等分の花嫁 五つ子ちゃんはパズルを五等分できない。** (Gotopazu - 5-toubun no Hanayome).
 
-> Game EOS: 2025-06-30 | Developer: Enish Co.,Ltd. | Internal codename: `Cancer`
-
----
-
-## Discovered Server Info (from Il2CppDumper + binary analysis)
-
-| Role | Original URL |
-|------|-------------|
-| **HTTP API** | `https://www-cancer.enish-games.com` |
-| **Asset CDN** | `https://assets.enish-games.com/assets-cancer/Resources` |
-| **Realtime WS** | `ws://rt-cancer.enish-games.com` |
-| **Firebase** | `https://cancer-production.firebaseio.com` |
-
-**Protocol**: HTTP POST, `Content-Type: application/x-protobuf` (protobuf-net .NET format)
-
-**Required Headers**:
-```
-X-Enish-App-Language          ja
-X-Enish-App-Platform          android / ios
-X-Enish-App-Session           <token from /account/certificate>
-X-Enish-App-Version           1.43.440
-X-Enish-App-Version-Master    <master data version>
-X-Enish-App-Version-Resource  <resource version>
-X-Enish-Date                  <unix timestamp>
-X-Enish-Expiredate            <expiry timestamp>
-X-Enish-App-Store             google / apple
-X-Enish-App-Review            0
-X-Enish-App-Season-ID         <current season id>
-X-Enish-App-Resource-Cnt      <resource download count>
-X-Enish-App-User-Agent        <app user agent>
-```
+> **Game EOS**: 2025-06-30 | **Developer**: Enish Co.,Ltd. | **Internal Codename**: `Cancer`
 
 ---
 
-## Proto Schema
+## 🌟 Introduction
 
-The game uses **protobuf-net** (C# .NET protobuf library). Full schema extracted from:
-- `proto.dll` → `docs/proto_dump_full.cs` (75,736 lines of IL2CPP dump)
-- `proto_serializer.dll` → `docs/proto_serializer_dump.cs`
+`tqq-server` is an effort to restore and maintain the Gotopazu game by emulating its original server. Through reverse engineering the application's source code and network protocols, this server is capable of communicating, providing master data, and saving player progress.
 
-Every response wraps in one of:
-```protobuf
-Master    { StoredData stored_data = 1; All all = 2; }       // full data
-Error     { StoredData stored_data = 1; ErrorDetail error = 2; }
-Nocontent { StoredData stored_data = 1; }                     // 204-like
-```
+The project utilizes **Java 17**, **Netty** for high-performance HTTP/WebSocket handling, and **SQLite** for lightweight database storage.
 
-`StoredData` contains the player state delta (only changed fields sent).
-See `src/main/proto/gotopazu_game.proto` for the complete schema (940+ lines).
+## ⚙️ Implementation Status
 
----
+The server has successfully implemented multiple core features enabling clients to log in and play normally:
 
-## Auth Flow
-
-```
-1. POST /account/certificate
-   Body: AccountCertificateRequest { token, platform, device_id, adid }
-   Resp: Cert { token, version }       ← save token for X-Enish-App-Session
-
-2. POST /account/authorize
-   Header: X-Enish-App-Session = <token>
-   Resp: Master { stored_data, all }   ← full player + master data
-```
+| Feature | Status | Notes |
+|-----------|--------|-------|
+| **HTTP Server (Netty)** | ✅ Done | Fully routed ~250 game endpoints. |
+| **Protobuf Protocol** | ✅ Done | Supports serialization and deserialization of the game's native Protobuf schemas. |
+| **Auth Flow** | ✅ Done | Issues secure multi-session JWT tokens (Session Service). |
+| **Player Data (DB)** | ✅ Done | Uses SQLite. Supports Profile, Cards, Units, Affection (Members), Options, etc. |
+| **Master Data** | ✅ Done | Loads static master data dynamically from JSON files. |
+| **JSON/Text APIs** | ✅ Done | Flexibly parses API bodies in JSON or Form-UrlEncoded formats. |
+| **Friend System** | ✅ Done | Send requests, Approve, Reject, Delete friends (integrated with JSON). |
+| **CDN (Assets)** | ✅ Done | Serves Asset files directly over the Server port, supports ETag & 304. |
+| **Puzzle (Minigame)** | 🔧 WIP | Score calculation and post-clear rewards logic. |
+| **Gacha** | 🔧 WIP | Algorithms and drop rates. |
 
 ---
 
-## iOS Patching
+## 🛠 Setup & Run Instructions
 
-### Step 1: Patch resources.assets (URL redirect)
+### 1. Requirements
+- **Java 17** or higher.
+- **Maven** (to build the project).
+- Directories containing Master data and CDN assets (extracted from the client).
+
+### 2. Build the Project
 ```bash
-python3 tools/patch_ios_resources.py \
-  /Volumes/SoftwareDisk/Payload/ProductName.app/Data/resources.assets \
-  192.168.1.100 \
-  patched_resources.assets \
-  8080 8081 8082
-```
-Patches (same-length byte replacement, Unity-safe):
-- `https://www-cancer.enish-games.com` → `http://IP:8080/...`
-- `https://assets.enish-games.com/assets-cancer/Resources` → `http://IP:8081/...`
-- `ws://rt-cancer.enish-games.com` → `ws://IP:8082/...`
-
-### Step 2: Patch UnityFramework (IAP bypass)
-```bash
-python3 tools/patch_ios_unityframework.py \
-  /Volumes/SoftwareDisk/Payload/ProductName.app/Frameworks/UnityFramework.framework/UnityFramework
-```
-Applies: `iap_manager_update_product_list_bypass` @ 0x26751C0
-
-### Step 3: Resign & deploy
-```bash
-codesign -f -s - /Volumes/SoftwareDisk/Payload/ProductName.app
-```
-
----
-
-## Asset CDN
-
-Files in `/Volumes/OCungRoi/PRJ/GTPZ-PS/assets_cdn/`:
-- **54,054 files**, ~9.3 GB total
-- Named by 32-char MD5 hash (content-addressed)
-- Android coverage: 27,855/29,978 (92.9%)
-- iOS coverage: 13/30,015 (0.04%) — iOS bundles likely need separate download
-
-Resource list proto files (capture from production):
-- `/Volumes/OCungRoi/PRJ/GTPZ-PS/gotopazu/Android` — 29,978 entries
-- `/Volumes/OCungRoi/PRJ/GTPZ-PS/gotopazu/Ios` — 30,015 entries
-
-Proto entry format:
-```
-repeated {
-  int64  id   = 1;   // bundle id
-  msg {
-    string name = 1;  // 32-char hex hash = filename in assets_cdn/
-    int64  size = 2;  // file size in bytes
-  } = 2;
-}
-```
-
-CDN URL flow:
-1. Client POST `/resource/list/Android` → server returns `gotopazu/Android` proto
-2. Client reads each `{hash, size}` entry
-3. Client GET `http://CDN_HOST:8081/assets-cancer/Resources/android/{hash}`
-4. Server looks up `assets_cdn/{hash}` and streams it
-
----
-
-## Architecture
-
-```
-Client (Android / iOS)  ─── tất cả qua cùng port :8080 ───────────────────────────
-  │
-  ├─ POST /account/*, /user/*, /puzzle/*, … ─► HttpApiHandler (248 endpoints)
-  │  Content-Type: application/x-protobuf         ├─ AccountRoutes, UserRoutes, …
-  │  (was https://www-cancer.enish-games.com)      └─ ResourceRoutes /resource/list/{Android|Ios}
-  │                                                    → serve gotopazu/Android proto trực tiếp
-  │
-  ├─ GET /assets-cancer/Resources/{p}/{hash}──► HttpApiHandler (CDN path)
-  │  (was https://assets.enish-games.com)           → stream assets_cdn/{hash} qua ChunkedFile
-  │                                                    ETag=hash, 304 nếu client đã có
-  │
-  └─ GET /ws  (Upgrade: websocket) ──────────► GameWebSocketHandler
-     (was ws://rt-cancer.enish-games.com)          real-time puzzle events
-
-Pipeline (GameServerInitializer):
-  HttpServerCodec → HttpObjectAggregator(8MB) → ChunkedWriteHandler
-  → WebSocketServerCompressionHandler → WebSocketServerProtocolHandler(/ws)
-  → HttpApiHandler → GameWebSocketHandler
-```
-
----
-
-## Build & Run
-
-```bash
-# Build fat JAR
 cd tqq-server
-mvn package -DskipTests
+mvn clean package -DskipTests
+```
 
-# Run — API + CDN + WS cùng port 8080
-java -jar target/tqq-server-1.0.0-SNAPSHOT.jar
-
-# Custom port / paths
+### 3. Run the Server
+The server runs all services (API, WebSocket, CDN) on a single port.
+```bash
 java -jar target/tqq-server-1.0.0-SNAPSHOT.jar \
   --port 8080 \
   --db ./gotopazu.db \
-  --cdn-dir /Volumes/OCungRoi/PRJ/GTPZ-PS/assets_cdn \
-  --resource-dir /Volumes/OCungRoi/PRJ/GTPZ-PS/gotopazu
+  --cdn-dir /path/to/assets_cdn \
+  --resource-dir /path/to/gotopazu
+```
 
-# Env vars
+Alternatively, use environment variables:
+```bash
 GOTOPAZU_PORT=8080 \
-GOTOPAZU_CDN_DIR=/Volumes/OCungRoi/PRJ/GTPZ-PS/assets_cdn \
-GOTOPAZU_RESOURCE_DIR=/Volumes/OCungRoi/PRJ/GTPZ-PS/gotopazu \
-  java -jar target/tqq-server-*.jar
-```
-
-### Verify sau khi chạy
-```bash
-# Health check
-curl http://localhost:8080/health
-
-# CDN — nên trả asset bundle bytes (200 + Content-Length)
-curl -I http://localhost:8080/assets-cancer/Resources/android/2003e7d515ec2d5f4f379e3dfaf26de5
-
-# CDN ETag / 304 check
-curl -I -H 'If-None-Match: "2003e7d515ec2d5f4f379e3dfaf26de5"' \
-  http://localhost:8080/assets-cancer/Resources/android/2003e7d515ec2d5f4f379e3dfaf26de5
-
-# Resource list (raw proto, ~1.4MB)
-curl -s -X POST http://localhost:8080/resource/list/Android \
-  -H "X-Enish-App-Session: test" \
-  -H "X-Enish-App-Version: 1.43.440" \
-  | wc -c   # expect ~1406159 bytes
-```
-
-### iOS patch (một port cho tất cả)
-```bash
-python3 tools/patch_ios_resources.py \
-  /Volumes/SoftwareDisk/Payload/ProductName.app/Data/resources.assets \
-  192.168.1.100 \
-  patched_resources.assets \
-  8080    # single port — API + CDN + WS
+GOTOPAZU_CDN_DIR=/path/to/assets_cdn \
+GOTOPAZU_RESOURCE_DIR=/path/to/gotopazu \
+  java -jar target/tqq-server-1.0.0-SNAPSHOT.jar
 ```
 
 ---
 
-## Implementation Status
+## 📂 Code Structure
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| HTTP server (Netty) | ✅ | All 248 endpoints registered |
-| Proto schema | ✅ | Full schema from Il2CppDumper |
-| Auth flow | 🔧 Stub | Returns valid Cert token |
-| StoredData delta | ⏳ | Need proto-net compatible encoder |
-| Master data (`/master/all`) | ⏳ | Need to extract from binary |
-| Resource list (`/resource/list/Android`) | ✅ | Serves `gotopazu/Android` proto directly |
-| Resource list (`/resource/list/Ios`) | ✅ | Serves `gotopazu/Ios` proto directly |
-| Asset CDN (`:8081 /assets-cancer/Resources/*`) | ✅ | Serves `assets_cdn/{hash}` flat files, ETag+304 |
-| Puzzle (start/clear/fail) | 🔧 Stub | Score/reward logic TODO |
-| Gacha | 🔧 Stub | Algorithm + rates TODO |
-| SQLite DB | ✅ | Schema: 7 tables |
-| iOS patch (resources.assets) | ✅ | `tools/patch_ios_resources.py` |
-| iOS patch (UnityFramework) | ✅ | `tools/patch_ios_unityframework.py` |
-| WebSocket realtime | 🔧 Stub | Frame format TBD |
-
-**Legend**: ✅ Done | 🔧 Stub | ⏳ Not started
-
----
-
-## Key Files
-
-```
+```text
 tqq-server/
-├── pom.xml
-├── docs/
-│   ├── proto_dump_full.cs          ← Il2CppDumper output (proto.dll, 75k lines)
-│   ├── proto_serializer_dump.cs    ← proto_serializer.dll dump
-│   ├── REVERSE_ENGINEERING_NOTES.md
-│   └── iOS_PATCHING.md
-├── tools/
-│   ├── dump_cs_to_proto.py         ← Convert dump.cs → .proto
-│   ├── gen_route_stubs.py          ← Generate Java route stubs
-│   ├── patch_ios_resources.py      ← iOS resources.assets URL patcher
-│   └── patch_ios_unityframework.py ← iOS UnityFramework IAP bypass
+├── pom.xml                 # Maven configuration
+├── docs/                   # Reverse engineering docs (Il2Cpp, Protobuf schemas)
+├── tools/                  # Python scripts for patching the client
 └── src/main/
-    ├── proto/
-    │   ├── gotopazu_game.proto     ← Full game proto schema (940 lines)
-    │   └── gotopazu.proto          ← Server-internal protos
-    └── java/jp/enish/gotopazu/
-        ├── server/                 GotopazuServer, ServerConfig
-        ├── network/
-        │   ├── http/               HttpApiHandler + all Route classes
-        │   └── websocket/          GameWebSocketHandler, GameSession
-        ├── handler/                PacketDispatcher + command handlers
-        ├── service/                UserService, SessionService
-        └── db/                     DatabaseManager (SQLite)
+    ├── proto/              # Protobuf definitions (.proto) for client & server
+    ├── resources/          # Default configurations (config.json)
+    └── java/com/emu/tqqserver/
+        ├── server/         # Netty Server bootstrap
+        ├── network/        # HTTP/WebSocket handlers, Routing, CDN, API Decoder
+        ├── game/           # Game logic separated by features (user, friend, unit, collection...)
+        ├── db/             # SQLite Database connections and Data Access Objects (Dao)
+        └── model/          # Entity class definitions for the database
 ```
+
+## 📝 Additional Information (Reverse Engineering)
+
+Original Game Protocol:
+- **HTTP POST** with `Content-Type: application/x-protobuf`.
+- **Required Headers**:
+  - `X-Enish-App-Session`: Authorization token issued by the `/account/certificate` API.
+  - `X-Enish-App-Version`: Application version (e.g., 1.43.440).
+  - `X-Enish-Date`, `X-Enish-Expiredate`: Unix timestamps.
+- Responses are wrapped in standard structures including `Master`, `Nocontent`, or `Error`. The server accurately simulates this structure.

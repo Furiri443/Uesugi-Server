@@ -70,7 +70,11 @@ public class FriendRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int targetId = readIntField(req, 1);
+            int targetId = 0;
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            if (body.has("target_id")) targetId = body.get("target_id").asInt();
+            else if (body.has("uid")) targetId = body.get("uid").asInt();
+            
             if (targetId > 0 && targetId != userId) {
                 friendService.sendRequest(userId, targetId);
             }
@@ -85,7 +89,11 @@ public class FriendRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int targetId = readIntField(req, 1);
+            int targetId = 0;
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            if (body.has("target_id")) targetId = body.get("target_id").asInt();
+            else if (body.has("uid")) targetId = body.get("uid").asInt();
+            
             if (targetId > 0) {
                 friendService.cancelRequest(userId, targetId);
             }
@@ -100,7 +108,11 @@ public class FriendRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int targetId = readIntField(req, 1);
+            int targetId = 0;
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            if (body.has("target_id")) targetId = body.get("target_id").asInt();
+            else if (body.has("uid")) targetId = body.get("uid").asInt();
+            
             if (targetId > 0) {
                 friendService.approveRequest(userId, targetId);
             }
@@ -115,7 +127,11 @@ public class FriendRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int targetId = readIntField(req, 1);
+            int targetId = 0;
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            if (body.has("target_id")) targetId = body.get("target_id").asInt();
+            else if (body.has("uid")) targetId = body.get("uid").asInt();
+            
             if (targetId > 0) {
                 friendService.rejectRequest(userId, targetId);
             }
@@ -130,7 +146,11 @@ public class FriendRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int targetId = readIntField(req, 1);
+            int targetId = 0;
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            if (body.has("target_id")) targetId = body.get("target_id").asInt();
+            else if (body.has("uid")) targetId = body.get("uid").asInt();
+            
             if (targetId > 0) {
                 friendService.deleteFriend(userId, targetId);
             }

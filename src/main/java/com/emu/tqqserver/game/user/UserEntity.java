@@ -26,6 +26,13 @@ public class UserEntity {
     private int playerTitleTargetId;
     private boolean isNewUser;
     private int dailyRewardReceivedAt;
+    
+    private int optionBgm = 10;
+    private int optionSe = 10;
+    private int optionVoice = 10;
+    private int optionProtectCardR6 = 1;
+    private int optionProtectCardR5 = 1;
+    private int optionProtectCardFirst = 1;
 
     public UserEntity() {}
 
@@ -72,14 +79,32 @@ public class UserEntity {
     public int getPlayerTitleId()            { return playerTitleId; }
     public void setPlayerTitleId(int v)       { this.playerTitleId = v; }
 
-    public int getPlayerTitleTargetId()       { return playerTitleTargetId; }
+    public int getPlayerTitleTargetId()      { return playerTitleTargetId; }
     public void setPlayerTitleTargetId(int v) { this.playerTitleTargetId = v; }
 
-    public boolean isNewUser()               { return isNewUser; }
-    public void setNewUser(boolean v)        { this.isNewUser = v; }
+    public int getDailyRewardReceivedAt()    { return dailyRewardReceivedAt; }
+    public void setDailyRewardReceivedAt(int v){ this.dailyRewardReceivedAt = v; }
 
-    public int getDailyRewardReceivedAt()           { return dailyRewardReceivedAt; }
-    public void setDailyRewardReceivedAt(int v)     { this.dailyRewardReceivedAt = v; }
+    public int getOptionBgm()                { return optionBgm; }
+    public void setOptionBgm(int v)          { this.optionBgm = v; }
+
+    public int getOptionSe()                 { return optionSe; }
+    public void setOptionSe(int v)           { this.optionSe = v; }
+
+    public int getOptionVoice()              { return optionVoice; }
+    public void setOptionVoice(int v)        { this.optionVoice = v; }
+
+    public int getOptionProtectCardR6()      { return optionProtectCardR6; }
+    public void setOptionProtectCardR6(int v) { this.optionProtectCardR6 = v; }
+
+    public int getOptionProtectCardR5()      { return optionProtectCardR5; }
+    public void setOptionProtectCardR5(int v) { this.optionProtectCardR5 = v; }
+
+    public int getOptionProtectCardFirst()   { return optionProtectCardFirst; }
+    public void setOptionProtectCardFirst(int v){ this.optionProtectCardFirst = v; }
+
+    public boolean isNewUser()               { return isNewUser; }
+    public void setNewUser(boolean newUser)  { isNewUser = newUser; }
 
     public User toProto() {
         com.emu.tqqserver.server.ServerConfig.GameDefaultsConfig defaults = 

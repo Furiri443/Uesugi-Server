@@ -48,7 +48,12 @@ public class UserRoutes extends BaseRoute {
         UserEntity me = requireUser(req);
         long myUserId = me.getUserId();
 
-        List<Long> uids = readInt64ListField(req, 1);
+        List<Long> uids = new ArrayList<>();
+        com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+        if (body.has("uids") && body.get("uids").isArray()) {
+            for (com.fasterxml.jackson.databind.JsonNode n : body.get("uids")) uids.add(n.asLong());
+        }
+
         ListUsers.Builder builder = ListUsers.newBuilder()
             .setStoredData(storedDataService.build(me));
 
@@ -69,7 +74,11 @@ public class UserRoutes extends BaseRoute {
         Long myUserId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (myUserId == null) myUserId = 1L;
 
-        int targetUid = readIntField(req, 1);
+        int targetUid = 0;
+        com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+        if (body.has("target_id")) targetUid = body.get("target_id").asInt();
+        else if (body.has("uid")) targetUid = body.get("uid").asInt();
+        
         long uid = targetUid > 0 ? targetUid : myUserId;
 
         UserEntity user = userService.findById(uid);
@@ -111,7 +120,10 @@ public class UserRoutes extends BaseRoute {
         UserEntity me = requireUser(req);
         long myUserId = me.getUserId();
 
-        int targetUid = readIntField(req, 1);
+        int targetUid = 0;
+        com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+        if (body.has("target_id")) targetUid = body.get("target_id").asInt();
+        else if (body.has("uid")) targetUid = body.get("uid").asInt();
         ListUsers.Builder builder = ListUsers.newBuilder()
             .setStoredData(storedDataService.build(me));
 
@@ -139,7 +151,8 @@ public class UserRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            String nickname = readStringField(req, 1);
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            String nickname = body.has("nickname") ? body.get("nickname").asText() : "";
             if (!nickname.isEmpty()) {
                 userService.updateNickname(userId, nickname);
             }
@@ -168,7 +181,8 @@ public class UserRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int bgId = readIntField(req, 1);
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            int bgId = body.has("bg_id") ? body.get("bg_id").asInt() : 0;
             if (bgId > 0) {
                 userService.updateBackground(userId, bgId);
                 com.emu.tqqserver.game.home.HomeService homeService = new com.emu.tqqserver.game.home.HomeService();
@@ -199,8 +213,10 @@ public class UserRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int[] titles = readTwoIntFields(req);
-            userService.updatePlayerTitle(userId, titles[0], titles[1]);
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            int titleId = body.has("title_id") ? body.get("title_id").asInt() : 0;
+            int targetId = body.has("target_id") ? body.get("target_id").asInt() : 0;
+            userService.updatePlayerTitle(userId, titleId, targetId);
         }
         sendNocontent(ctx, req);
     }
@@ -212,10 +228,12 @@ public class UserRoutes extends BaseRoute {
         UserEntity me = requireUser(req);
         if (me != null) {
             try {
-                byte[] body = getBody(req);
-                com.emu.tqqserver.proto.pkg_puser.User userObj = com.emu.tqqserver.proto.pkg_puser.User.parseFrom(body);
-                if (userObj.getNickname() != null && !userObj.getNickname().isEmpty()) {
-                    userService.updateNickname(me.getUserId(), userObj.getNickname());
+                com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+                if (body.has("nickname")) {
+                    userService.updateNickname(me.getUserId(), body.get("nickname").asText());
+                }
+                if (body.has("comment")) {
+                    // Ignore comment for now or add updateComment
                 }
             } catch (Exception e) {
                 log.error("Failed to parse user profile update", e);
@@ -231,7 +249,8 @@ public class UserRoutes extends BaseRoute {
         String session = getSession(req);
         Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            int bgId = readIntField(req, 1);
+            com.fasterxml.jackson.databind.JsonNode body = getJsonBody(req);
+            int bgId = body.has("bg_id") ? body.get("bg_id").asInt() : 0;
             if (bgId > 0) {
                 userService.updateBackground(userId, bgId);
             }

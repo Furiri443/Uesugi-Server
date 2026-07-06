@@ -73,6 +73,8 @@ public class DatabaseManager {
 
             stmt.executeUpdate(SQL_CREATE_USER_ITEMS);
             stmt.executeUpdate(SQL_CREATE_USER_CARDS);
+            stmt.executeUpdate(SQL_CREATE_USER_UNITS);
+            stmt.executeUpdate(SQL_CREATE_USER_MEMBERS);
             stmt.executeUpdate(SQL_CREATE_USER_STAGES);
             stmt.executeUpdate(SQL_CREATE_USER_STORIES);
             stmt.executeUpdate(SQL_CREATE_USER_STAMINA);
@@ -87,6 +89,13 @@ public class DatabaseManager {
             try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN player_title_id INTEGER NOT NULL DEFAULT 0"); } catch (SQLException ignored) {}
             try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN player_title_target_id INTEGER NOT NULL DEFAULT 0"); } catch (SQLException ignored) {}
             try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN pay_jewel INTEGER NOT NULL DEFAULT 0"); } catch (SQLException ignored) {}
+
+            try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_bgm INTEGER NOT NULL DEFAULT 10"); } catch (SQLException ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_se INTEGER NOT NULL DEFAULT 10"); } catch (SQLException ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_voice INTEGER NOT NULL DEFAULT 10"); } catch (SQLException ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_protect_card_r6 INTEGER NOT NULL DEFAULT 1"); } catch (SQLException ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_protect_card_r5 INTEGER NOT NULL DEFAULT 1"); } catch (SQLException ignored) {}
+            try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_protect_card_first INTEGER NOT NULL DEFAULT 1"); } catch (SQLException ignored) {}
 
             log.info("Database schema created/verified");
         } catch (SQLException e) {
@@ -112,9 +121,17 @@ public class DatabaseManager {
             home_background_id       INTEGER NOT NULL DEFAULT 10001,
             player_title_id          INTEGER NOT NULL DEFAULT 0,
             player_title_target_id   INTEGER NOT NULL DEFAULT 0,
-            last_login_at            INTEGER,
             daily_reward_received_at INTEGER NOT NULL DEFAULT 0,
-            created_at               INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+            comment                  TEXT    NOT NULL DEFAULT 'よろしくお願いします',
+            option_bgm               INTEGER NOT NULL DEFAULT 10,
+            option_se                INTEGER NOT NULL DEFAULT 10,
+            option_voice             INTEGER NOT NULL DEFAULT 10,
+            option_protect_card_r6   INTEGER NOT NULL DEFAULT 1,
+            option_protect_card_r5   INTEGER NOT NULL DEFAULT 1,
+            option_protect_card_first INTEGER NOT NULL DEFAULT 1,
+            last_login_at            INTEGER,
+            created_at               INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+            updated_at               INTEGER NOT NULL DEFAULT (strftime('%s','now'))
         )
         """;
 
@@ -142,6 +159,37 @@ public class DatabaseManager {
             skill_level  INTEGER NOT NULL DEFAULT 1,
             is_new       INTEGER NOT NULL DEFAULT 1,
             obtained_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+        )
+        """;
+
+    // ── Units (Decks/Lineups) ──────────────────────────────────────────────────
+    private static final String SQL_CREATE_USER_UNITS = """
+        CREATE TABLE IF NOT EXISTS user_units (
+            user_id    INTEGER NOT NULL REFERENCES users(user_id),
+            idx        INTEGER NOT NULL,
+            unit_name  TEXT,
+            member1    INTEGER NOT NULL,
+            member2    INTEGER NOT NULL,
+            member3    INTEGER NOT NULL,
+            member4    INTEGER NOT NULL,
+            member5    INTEGER NOT NULL,
+            card1      INTEGER NOT NULL,
+            card2      INTEGER NOT NULL,
+            card3      INTEGER NOT NULL,
+            card4      INTEGER NOT NULL,
+            card5      INTEGER NOT NULL,
+            PRIMARY KEY (user_id, idx)
+        )
+        """;
+
+    // ── Members (Affection levels) ─────────────────────────────────────────────
+    private static final String SQL_CREATE_USER_MEMBERS = """
+        CREATE TABLE IF NOT EXISTS user_members (
+            user_id    INTEGER NOT NULL REFERENCES users(user_id),
+            member_id  INTEGER NOT NULL,
+            dear_level INTEGER NOT NULL DEFAULT 1,
+            likability INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (user_id, member_id)
         )
         """;
 
