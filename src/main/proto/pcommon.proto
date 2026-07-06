@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package pkg_pcommon;
+
+option java_package = "com.emu.tqqserver.proto.pkg_pcommon";
+option java_outer_classname = "PcommonProto";
+option java_multiple_files = true;
+
+message Error {
+  int32 code = 1;
+  int32 level = 2;
+  string msg = 3;
+  string payload = 4;
+  string detail = 5;
+  uint32 ts = 6;
+  string store_url = 7;
+}
+
+message Nocontent {
+  uint32 ts = 1;
+}
+
+message ResourceInfo {
+  string hash = 1;
+  uint32 size = 2;
+}
+
+message Resources {
+  map<int32, ResourceInfo> resource = 1;
+}
+

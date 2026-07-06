@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package pkg_prealtime;
+
+option java_package = "com.emu.tqqserver.proto.pkg_prealtime";
+option java_outer_classname = "PrealtimeProto";
+option java_multiple_files = true;
+
+message ChatGroup {
+  int32 id = 1;
+  int32 uid = 2;
+  string name = 3;
+}
+
+message ChatGroupList {
+  repeated ChatGroup list = 1;
+}
+
+message ChatGroupMember {
+  int32 chat_group_id = 1;
+  int32 uid = 2;
+  int32 is_unread = 3;
+  int32 is_invite = 4;
+}
+
+message ChatGroupMemberList {
+  repeated ChatGroupMember list = 1;
+}
+
+message ChatMessage {
+  int64 id = 1;
+  string channel = 2;
+  int32 uid = 3;
+  int32 type = 4;
+  int32 tag = 5;
+  int32 stamp = 6;
+  string message_ = 7;
+  string attachment = 8;
+  uint32 posted_at = 9;
+}
+
+message ChatMessageList {
+  repeated ChatMessage list = 1;
+}
+
+message ChatPublish {
+  repeated string channels = 1;
+  ChatBody body = 2;
+}
+
+message ChatBody {
+  int32 uid = 1;
+  int32 type = 2;
+  int32 tag = 3;
+  int32 stamp = 4;
+  string message_ = 5;
+  string attachment = 6;
+}
+
+message ChatBadge {
+  string channel = 1;
+}
+
+message Empty {
+}
+
+message Error {
+  int32 code = 1;
+  string msg = 2;
+}
+
+message Channel {
+  repeated string channels = 1;
+}
+
+message RelayPublish {
+  repeated string channels = 1;
+  RelayBody body = 2;
+}
+
+message RelayBody {
+  int32 code = 1;
+  string content = 2;
+}
+
+message StatNumSub {
+  map<string, int32> nums = 1;
+}
+

@@ -1,0 +1,1136 @@
+syntax = "proto3";
+
+package pkg_pmisc;
+
+option java_package = "com.emu.tqqserver.proto.pkg_pmisc";
+option java_outer_classname = "PmiscProto";
+option java_multiple_files = true;
+
+message Advertising {
+  int32 uid = 1;
+  int32 advertising_id = 2;
+  int32 view_count = 3;
+  int32 reward_count_remaining = 4;
+  uint32 last_reset_at = 5;
+  uint32 last_viewed_at = 6;
+}
+
+message AdvertisingList {
+  repeated Advertising list = 1;
+}
+
+message BirthFestivalHistory {
+  int32 uid = 1;
+  int32 birth_festival_id = 2;
+  int32 status = 3;
+}
+
+message BirthFestivalHistoryList {
+  repeated BirthFestivalHistory list = 1;
+}
+
+message BookManage {
+  int32 uid = 1;
+  int32 member_id_1 = 2;
+  int32 member_id_2 = 3;
+  int32 member_id_3 = 4;
+  int32 costume_id_1 = 5;
+  int32 costume_id_2 = 6;
+  int32 group_id_1 = 7;
+  int32 group_id_2 = 8;
+}
+
+message BookManageList {
+  repeated BookManage list = 1;
+}
+
+message BookManageDetail {
+  int32 uid = 1;
+  int32 type = 2;
+  int32 target_id = 3;
+  int32 card_id_1 = 4;
+  int32 card_id_2 = 5;
+  int32 card_id_3 = 6;
+  int32 card_id_4 = 7;
+  int32 card_id_5 = 8;
+}
+
+message BookManageDetailList {
+  repeated BookManageDetail list = 1;
+}
+
+message CardSerialNumber {
+  int32 card_id = 1;
+  int32 serial_number = 2;
+}
+
+message CardSerialNumberList {
+  repeated CardSerialNumber list = 1;
+}
+
+message Challenge {
+  int32 uid = 1;
+  int32 challenge_id = 2;
+  int32 status = 3;
+  int32 value = 4;
+  int32 step = 5;
+  uint32 updated_at = 6;
+}
+
+message ChallengeList {
+  repeated Challenge list = 1;
+}
+
+message ChallengeGroup {
+  int32 uid = 1;
+  int32 group_id = 2;
+  int32 status = 3;
+  uint32 updated_at = 4;
+}
+
+message ChallengeGroupList {
+  repeated ChallengeGroup list = 1;
+}
+
+message ChallengeTotalSummary {
+  int32 uid = 1;
+  int32 category = 2;
+  int32 target_a = 3;
+  int32 target_b = 4;
+  int32 value = 5;
+}
+
+message ChallengeTotalSummaryList {
+  repeated ChallengeTotalSummary list = 1;
+}
+
+message CollectionReward {
+  int32 uid = 1;
+  int32 category = 2;
+  int32 target_id = 3;
+  int32 count = 4;
+  int32 last_count = 5;
+}
+
+message CollectionRewardList {
+  repeated CollectionReward list = 1;
+}
+
+message CookingHelpHistory {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 target_uid = 3;
+  int32 tray_index = 4;
+  int32 recipe_id = 5;
+  string tray_unique_id = 6;
+  int32 is_friend = 7;
+  uint32 created_at = 8;
+}
+
+message CookingHelpHistoryList {
+  repeated CookingHelpHistory list = 1;
+}
+
+message Feature {
+  int32 feature_id = 1;
+  int32 uid = 2;
+  string status = 3;
+  string rewards = 4;
+  string params = 5;
+  int32 ep_summary = 6;
+  int32 ep_rank = 7;
+  int32 tutorial = 8;
+  int32 agree_terms = 9;
+  int32 selection_target_id = 10;
+  int32 application_cnt = 11;
+  int32 lottery_result_seen = 12;
+  int32 ep_fever_rating = 13;
+  uint32 ep_fever_expires_at = 14;
+  int32 encore_rank_rating = 15;
+  uint32 encore_rank_expires_at = 16;
+}
+
+message FeatureList {
+  repeated Feature list = 1;
+}
+
+message FeatureAppointment {
+  int32 uid = 1;
+  int32 feature_id = 2;
+  uint32 visited_at = 3;
+}
+
+message FeatureAppointmentList {
+  repeated FeatureAppointment list = 1;
+}
+
+message FeatureBatchHistory {
+  int32 id = 1;
+  int32 feature_id = 2;
+  string batch_name = 3;
+  string status = 4;
+  string log = 5;
+}
+
+message FeatureBatchHistoryList {
+  repeated FeatureBatchHistory list = 1;
+}
+
+message FeatureCoupon {
+  int32 uid = 1;
+  int32 feature_id = 2;
+  int32 type = 3;
+  int32 day = 4;
+  int32 coupon_id = 5;
+  string code = 6;
+  uint32 created_at = 7;
+}
+
+message FeatureCouponList {
+  repeated FeatureCoupon list = 1;
+}
+
+message FeatureItem {
+  int32 uid = 1;
+  int32 item_id = 2;
+  int32 target_id = 3;
+  int32 feature_id = 4;
+  int32 quantity = 5;
+}
+
+message FeatureItemList {
+  repeated FeatureItem list = 1;
+}
+
+message FeatureLotteryBatchHistory {
+  int32 id = 1;
+  int32 feature_id = 2;
+  string batch_name = 3;
+  string status = 4;
+  string log = 5;
+}
+
+message FeatureLotteryBatchHistoryList {
+  repeated FeatureLotteryBatchHistory list = 1;
+}
+
+message FeatureLotteryEntry {
+  int32 feature_id = 1;
+  int32 uid = 2;
+}
+
+message FeatureLotteryEntryList {
+  repeated FeatureLotteryEntry list = 1;
+}
+
+message FeatureLotteryResult {
+  int32 feature_id = 1;
+  int32 uid = 2;
+  int32 selection_target_id = 3;
+  int32 seq_id = 4;
+  int32 is_expired = 5;
+  string real_incentive_type = 6;
+}
+
+message FeatureLotteryResultList {
+  repeated FeatureLotteryResult list = 1;
+}
+
+message FeatureNakayoshi {
+  int32 feature_id = 1;
+  int32 uid = 2;
+  int32 nakayoshi_pt_remaining = 3;
+}
+
+message FeatureNakayoshiList {
+  repeated FeatureNakayoshi list = 1;
+}
+
+message FeatureNakayoshiPt {
+  int32 feature_id = 1;
+  int32 uid = 2;
+  int32 member_id = 3;
+  int32 nakayoshi_pt = 4;
+}
+
+message FeatureNakayoshiPtList {
+  repeated FeatureNakayoshiPt list = 1;
+}
+
+message FeatureRevival {
+  int32 feature_id = 1;
+  int32 uid = 2;
+  int32 step = 3;
+  int32 step_reset = 4;
+  uint32 day = 5;
+}
+
+message FeatureRevivalList {
+  repeated FeatureRevival list = 1;
+}
+
+message FeatureTeam {
+  int32 id = 1;
+  int32 feature_id = 2;
+  int32 status = 3;
+  int32 creator_uid = 4;
+  int32 leader_uid = 5;
+  string name = 6;
+  int32 join_type = 7;
+  int32 favorite_characters = 8;
+  int32 target_point = 9;
+  int32 target_rank = 10;
+  int32 boost_schedule = 11;
+  string comment = 12;
+  int32 ep_summary = 13;
+  int32 ep_rank = 14;
+  int32 charge_boost = 15;
+  uint32 charge_boost_expired_at = 16;
+}
+
+message FeatureTeamList {
+  repeated FeatureTeam list = 1;
+}
+
+message FeatureTeamMember {
+  int32 uid = 1;
+  int32 feature_id = 2;
+  int32 team_id = 3;
+  string status = 4;
+  int32 ep_summary = 5;
+  int32 encore_clear_count = 6;
+  int32 is_chat_unread = 7;
+  int32 boost_auth = 8;
+  uint32 encore_cleared_at = 9;
+  uint32 chat_sent_at = 10;
+  uint32 boost_charged_at = 11;
+  uint32 joined_at = 12;
+}
+
+message FeatureTeamMemberList {
+  repeated FeatureTeamMember list = 1;
+}
+
+message FeatureTeamRequest {
+  int32 uid = 1;
+  int32 feature_id = 2;
+  int32 team_id = 3;
+  string status = 4;
+  uint32 sent_at = 5;
+}
+
+message FeatureTeamRequestList {
+  repeated FeatureTeamRequest list = 1;
+}
+
+message FeatureTreasureHuntingExchangeItem {
+  int32 uid = 1;
+  int32 feature_id = 2;
+  int32 chapter_id = 3;
+  int32 reward_idx = 4;
+  int32 exchanged_count = 5;
+}
+
+message FeatureTreasureHuntingExchangeItemList {
+  repeated FeatureTreasureHuntingExchangeItem list = 1;
+}
+
+message FeatureTreasureHuntingStage {
+  int32 uid = 1;
+  int32 feature_id = 2;
+  int32 chapter_id = 3;
+  int32 stage_id = 4;
+  int32 box_id = 5;
+  int32 status = 6;
+}
+
+message FeatureTreasureHuntingStageList {
+  repeated FeatureTreasureHuntingStage list = 1;
+}
+
+message FreeGachaCount {
+  int32 uid = 1;
+  int32 gacha_id = 2;
+  int32 single_count = 3;
+  int32 lump_count = 4;
+  int32 silver_lump_count = 5;
+  int32 gold_lump_count = 6;
+  int32 diamond_lump_count = 7;
+  uint32 single_reset_at = 8;
+  uint32 lump_reset_at = 9;
+}
+
+message FreeGachaCountList {
+  repeated FreeGachaCount list = 1;
+}
+
+message Friend {
+  int32 uid = 1;
+  int32 friend_uid = 2;
+  string status = 3;
+  int32 is_sender = 4;
+}
+
+message FriendList {
+  repeated Friend list = 1;
+}
+
+message FuncTutorial {
+  int32 uid = 1;
+  int32 id = 2;
+  int32 is_done = 3;
+}
+
+message FuncTutorialList {
+  repeated FuncTutorial list = 1;
+}
+
+message GachaBonusChoice {
+  int32 uid = 1;
+  int32 gacha_id = 2;
+  int32 seq_id = 3;
+  string choice_pool_id = 4;
+  string acquired_idx = 5;
+}
+
+message GachaBonusChoiceList {
+  repeated GachaBonusChoice list = 1;
+}
+
+message GachaBoxHistory {
+  int32 uid = 1;
+  int32 gacha_id = 2;
+  int32 box_id = 3;
+  int32 reset_cnt = 4;
+}
+
+message GachaBoxHistoryList {
+  repeated GachaBoxHistory list = 1;
+}
+
+message GachaHistory {
+  int32 uid = 1;
+  int32 gacha_id = 2;
+  int32 step = 3;
+  int32 current_box_id = 4;
+  int32 rankup_box_id = 5;
+  int32 single_cnt = 6;
+  int32 ticket_cnt = 7;
+  int32 lump_cnt = 8;
+  int32 total_cnt = 9;
+  int32 limit_cnt = 10;
+  int32 group_weight_cnt = 11;
+  int32 is_paid = 12;
+  uint32 paid_date = 13;
+  uint32 last_gacha_date = 14;
+  int32 paid_single_reset_count = 15;
+  uint32 paid_single_reset_date = 16;
+  int32 paid_lump_reset_count = 17;
+  uint32 paid_lump_reset_date = 18;
+}
+
+message GachaHistoryList {
+  repeated GachaHistory list = 1;
+}
+
+message GachaOmakeHistory {
+  int32 uid = 1;
+  int32 gacha_id = 2;
+  int32 count = 3;
+  int32 single_reward_receive_count = 4;
+  uint32 single_reward_reset_date = 5;
+  int32 lump_reward_receive_count = 6;
+  uint32 lump_reward_reset_date = 7;
+}
+
+message GachaOmakeHistoryList {
+  repeated GachaOmakeHistory list = 1;
+}
+
+message GachaPanelBoard {
+  int32 uid = 1;
+  int32 board_id = 2;
+  int32 point = 3;
+  int32 reset_count = 4;
+  string data = 5;
+  string select_panel_data = 6;
+}
+
+message GachaPanelBoardList {
+  repeated GachaPanelBoard list = 1;
+}
+
+message GachaReport {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 status = 3;
+  int32 gacha_id = 4;
+  int32 card_id = 5;
+  string comment = 6;
+}
+
+message GachaReportList {
+  repeated GachaReport list = 1;
+}
+
+message InvitationCode {
+  int32 uid = 1;
+  string code = 2;
+  string serial = 3;
+  int32 total_invitation_count = 4;
+}
+
+message InvitationCodeList {
+  repeated InvitationCode list = 1;
+}
+
+message InvitationManagement {
+  int32 uid = 1;
+  int32 invitation_id = 2;
+  int32 invitation_count = 3;
+  string received_invitation_reward_ids = 4;
+}
+
+message InvitationManagementList {
+  repeated InvitationManagement list = 1;
+}
+
+message InvitedUser {
+  int32 uid = 1;
+  int32 invited_by = 2;
+  int32 invitation_id = 3;
+  int32 status = 4;
+}
+
+message InvitedUserList {
+  repeated InvitedUser list = 1;
+}
+
+message LoginBonusHistory {
+  int32 uid = 1;
+  int32 login_bonus_id = 2;
+  int32 login_num = 3;
+  int32 is_confirmed = 4;
+  int32 season_id = 5;
+}
+
+message LoginBonusHistoryList {
+  repeated LoginBonusHistory list = 1;
+}
+
+message LotteryBatchHistory {
+  int32 id = 1;
+  int32 lottery_id = 2;
+  string batch_name = 3;
+  string status = 4;
+  string log = 5;
+}
+
+message LotteryBatchHistoryList {
+  repeated LotteryBatchHistory list = 1;
+}
+
+message LotteryEntry {
+  int32 lottery_id = 1;
+  int32 lottery_reward_id = 2;
+  int32 selection_target_id = 3;
+  int32 uid = 4;
+  int32 status = 5;
+  int32 application_cnt = 6;
+}
+
+message LotteryEntryList {
+  repeated LotteryEntry list = 1;
+}
+
+message LotteryResult {
+  int32 lottery_id = 1;
+  int32 lottery_reward_id = 2;
+  int32 selection_id = 3;
+  int32 uid = 4;
+  int32 seq_id = 5;
+  string real_incentive_type = 6;
+  int32 is_expired = 7;
+}
+
+message LotteryResultList {
+  repeated LotteryResult list = 1;
+}
+
+message LotteryTerm {
+  int32 uid = 1;
+  int32 lottery_id = 2;
+  int32 agree_terms = 3;
+}
+
+message LotteryTermList {
+  repeated LotteryTerm list = 1;
+}
+
+message Maintenance {
+  int32 id = 1;
+  uint32 start_date = 2;
+  uint32 end_date = 3;
+}
+
+message MaintenanceList {
+  repeated Maintenance list = 1;
+}
+
+message MemberDearpoint {
+  int32 uid = 1;
+  int32 member_id = 2;
+  int32 season_id = 3;
+  uint32 oshimen_updated_at = 4;
+  int32 dearpoint = 5;
+  int32 ranking = 6;
+  int32 exclusive_status = 7;
+}
+
+message MemberDearpointList {
+  repeated MemberDearpoint list = 1;
+}
+
+message MemberLikabilityReward {
+  int32 uid = 1;
+  int32 member_id = 2;
+  int32 target_level = 3;
+}
+
+message MemberLikabilityRewardList {
+  repeated MemberLikabilityReward list = 1;
+}
+
+message MemberLikabilitypoint {
+  int32 uid = 1;
+  int32 member_id = 2;
+  int32 likabilitypoint = 3;
+}
+
+message MemberLikabilitypointList {
+  repeated MemberLikabilitypoint list = 1;
+}
+
+message MiniGame {
+  int32 uid = 1;
+  int32 mini_game_id = 2;
+  int32 rp = 3;
+  uint32 rp_will_recover_at = 4;
+  string status = 5;
+  int32 today_play_count = 6;
+  int32 total_play_count = 7;
+  int32 best_score = 8;
+  int32 easy_best_score = 9;
+  int32 normal_best_score = 10;
+  int32 high_best_score = 11;
+  int32 total_score = 12;
+  int32 total_trophy_count = 13;
+  int32 game_point = 14;
+  int32 total_game_point = 15;
+  string game_data = 16;
+  uint32 last_played_at = 17;
+}
+
+message MiniGameList {
+  repeated MiniGame list = 1;
+}
+
+message NewsHistory {
+  int32 uid = 1;
+  int32 news_id = 2;
+}
+
+message NewsHistoryList {
+  repeated NewsHistory list = 1;
+}
+
+message NewsMaster {
+  int32 id = 1;
+  string unique_id = 2;
+  int32 status = 3;
+  int32 category = 4;
+  int32 type = 5;
+  int32 priority = 6;
+  int32 banner_type = 7;
+  int32 banner_id = 8;
+  string platform = 9;
+  string uids = 10;
+  string title = 11;
+  string body = 12;
+  int32 is_force = 13;
+  uint32 open_date = 14;
+  uint32 newcome_date = 15;
+  uint32 close_date = 16;
+}
+
+message NewsMasterList {
+  repeated NewsMaster list = 1;
+}
+
+message PaymentLog {
+  int32 uid = 1;
+  string order_id = 2;
+  string status = 3;
+  string type = 4;
+  string sub_type = 5;
+  int32 prod_id = 6;
+  int32 unit_price = 7;
+  int32 count = 8;
+  int32 total_price = 9;
+  int32 free_coin = 10;
+  int32 paid_coin = 11;
+  int32 sum_coin = 12;
+  double consumption = 13;
+  string platform = 14;
+}
+
+message PaymentLogList {
+  repeated PaymentLog list = 1;
+}
+
+message PlayerTitleSummary {
+  int32 uid = 1;
+  int32 member_id = 2;
+  int32 player_title_num = 3;
+}
+
+message PlayerTitleSummaryList {
+  repeated PlayerTitleSummary list = 1;
+}
+
+message PracticeExam {
+  int32 practice_exam_id = 1;
+  int32 uid = 2;
+  string daily_ranking_rewards = 3;
+  string total_ranking_rewards = 4;
+}
+
+message PracticeExamList {
+  repeated PracticeExam list = 1;
+}
+
+message PracticeExamBatchHistory {
+  int32 practice_exam_id = 1;
+  string process_name = 2;
+  string status = 3;
+  string log = 4;
+}
+
+message PracticeExamBatchHistoryList {
+  repeated PracticeExamBatchHistory list = 1;
+}
+
+message PracticeExamScoreSummaryReport {
+  int32 practice_exam_id = 1;
+  double mean_score_math = 2;
+  double mean_score_english = 3;
+  double mean_score_social = 4;
+  double mean_score_national_lang = 5;
+  double mean_score_science = 6;
+}
+
+message PracticeExamScoreSummaryReportList {
+  repeated PracticeExamScoreSummaryReport list = 1;
+}
+
+message PracticeExamTScore {
+  int32 practice_exam_id = 1;
+  int32 uid = 2;
+  double t_score_math = 3;
+  int64 score_math = 4;
+  int32 rank_math = 5;
+  double t_score_english = 6;
+  int64 score_english = 7;
+  int32 rank_english = 8;
+  double t_score_social = 9;
+  int64 score_social = 10;
+  int32 rank_social = 11;
+  double t_score_national_lang = 12;
+  int64 score_national_lang = 13;
+  int32 rank_national_lang = 14;
+  double t_score_science = 15;
+  int64 score_science = 16;
+  int32 rank_science = 17;
+}
+
+message PracticeExamTScoreList {
+  repeated PracticeExamTScore list = 1;
+}
+
+message PracticeExamTScoreFrequencyDistribution {
+  int32 practice_exam_id = 1;
+  int32 subject_type = 2;
+  int32 range_start = 3;
+  int32 range_end = 4;
+  int32 frequency = 5;
+}
+
+message PracticeExamTScoreFrequencyDistributionList {
+  repeated PracticeExamTScoreFrequencyDistribution list = 1;
+}
+
+message Present {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 status = 3;
+  int32 reward_type = 4;
+  int32 reward_id = 5;
+  int32 quantity = 6;
+  int32 card_level = 7;
+  int32 card_skill_level = 8;
+  int32 card_passive_skill_level1 = 9;
+  int32 card_passive_skill_level2 = 10;
+  int32 card_passive_skill_level3 = 11;
+  int32 property_id = 12;
+  int32 property_id_2 = 13;
+  int32 card_premium_id = 14;
+  int32 is_pair_card = 15;
+  int32 is_signed_card = 16;
+  int32 serial_number = 17;
+  int32 gacha_id = 18;
+  int32 limitbreak_rank = 19;
+  int32 interlude_voice1 = 20;
+  int32 interlude_voice2 = 21;
+  int32 interlude_voice3 = 22;
+  int32 interlude_voice4 = 23;
+  int32 interlude_voice5 = 24;
+  string message_ = 25;
+  string reason = 26;
+  string reason_detail = 27;
+  uint32 expire_date = 28;
+}
+
+message PresentList {
+  repeated Present list = 1;
+}
+
+message Reparation {
+  int32 uid = 1;
+  int32 reparation_id = 2;
+}
+
+message ReparationList {
+  repeated Reparation list = 1;
+}
+
+message ReparationMaster {
+  int32 id = 1;
+  int32 reparation_user_type = 2;
+  string uids = 3;
+  string message_ = 4;
+  string text = 5;
+  string reparation_items = 6;
+  uint32 open_date = 7;
+  uint32 close_date = 8;
+  uint32 install_date = 9;
+  uint32 after_install_date = 10;
+}
+
+message ReparationMasterList {
+  repeated ReparationMaster list = 1;
+}
+
+message Review {
+  int32 uid = 1;
+  string platform = 2;
+  string app_version = 3;
+  int32 status = 4;
+  uint32 last_review_date = 5;
+}
+
+message ReviewList {
+  repeated Review list = 1;
+}
+
+message ShopChallenge {
+  int32 uid = 1;
+  int32 shop_id = 2;
+  uint32 expired_at = 3;
+}
+
+message ShopChallengeList {
+  repeated ShopChallenge list = 1;
+}
+
+message ShopDearpointStock {
+  int32 uid = 1;
+  int32 shop_dearpoint_id = 2;
+  int32 purchase_num = 3;
+  int32 unlocked_count = 4;
+  uint32 updated_at = 5;
+}
+
+message ShopDearpointStockList {
+  repeated ShopDearpointStock list = 1;
+}
+
+message ShopExchangeLock {
+  int32 uid = 1;
+  int32 shop_type = 2;
+  string shop_ids = 3;
+  uint32 manual_updated_at = 4;
+  uint32 auto_updated_at = 5;
+}
+
+message ShopExchangeLockList {
+  repeated ShopExchangeLock list = 1;
+}
+
+message ShopFragmentLock {
+  int32 uid = 1;
+  string shop_ids = 2;
+  uint32 manual_updated_at = 3;
+  uint32 auto_updated_at = 4;
+}
+
+message ShopFragmentLockList {
+  repeated ShopFragmentLock list = 1;
+}
+
+message ShopMarkHistory {
+  int32 uid = 1;
+  string deposit_id = 2;
+  string product_id = 3;
+  uint32 purchase_date = 4;
+}
+
+message ShopMarkHistoryList {
+  repeated ShopMarkHistory list = 1;
+}
+
+message ShopStock {
+  int32 uid = 1;
+  int32 shop_id = 2;
+  int32 purchase_num = 3;
+  int32 purchase_total = 4;
+  uint32 last_purchase_at = 5;
+}
+
+message ShopStockList {
+  repeated ShopStock list = 1;
+}
+
+message SupplyBatchHistory {
+  int32 id = 1;
+  string type = 2;
+  string title = 3;
+  string reason = 4;
+  string admin = 5;
+  string file_name = 6;
+  string status = 7;
+  string log = 8;
+}
+
+message SupplyBatchHistoryList {
+  repeated SupplyBatchHistory list = 1;
+}
+
+message SupplyBatchUserHistory {
+  int32 id = 1;
+  int32 supply_batch_id = 2;
+  int32 uid = 3;
+  int32 target_type = 4;
+  int32 target_id = 5;
+  int32 count = 6;
+  string log = 7;
+}
+
+message SupplyBatchUserHistoryList {
+  repeated SupplyBatchUserHistory list = 1;
+}
+
+message SupplyUser {
+  int32 uid = 1;
+  string description = 2;
+}
+
+message SupplyUserList {
+  repeated SupplyUser list = 1;
+}
+
+message SuspendHistory {
+  int32 id = 1;
+  int32 uid = 2;
+  string status = 3;
+  string suspender = 4;
+  string reason = 5;
+}
+
+message SuspendHistoryList {
+  repeated SuspendHistory list = 1;
+}
+
+message TeamBattleBatchHistory {
+  int32 id = 1;
+  int32 team_battle_event_id = 2;
+  string batch_type = 3;
+  string batch_name = 4;
+  string status = 5;
+  string log = 6;
+}
+
+message TeamBattleBatchHistoryList {
+  repeated TeamBattleBatchHistory list = 1;
+}
+
+message TeamBattleLotteryBatchHistory {
+  int32 id = 1;
+  int32 team_battle_event_id = 2;
+  string batch_name = 3;
+  string status = 4;
+  string log = 5;
+}
+
+message TeamBattleLotteryBatchHistoryList {
+  repeated TeamBattleLotteryBatchHistory list = 1;
+}
+
+message TeamBattleLotteryEntry {
+  int32 team_battle_event_id = 1;
+  int32 uid = 2;
+}
+
+message TeamBattleLotteryEntryList {
+  repeated TeamBattleLotteryEntry list = 1;
+}
+
+message TeamBattleLotteryResult {
+  int32 team_battle_event_id = 1;
+  int32 uid = 2;
+  int32 selection_target_id = 3;
+  int32 seq_id = 4;
+  int32 is_expired = 5;
+  string real_incentive_type = 6;
+}
+
+message TeamBattleLotteryResultList {
+  repeated TeamBattleLotteryResult list = 1;
+}
+
+message TeamBattleMember {
+  int32 team_battle_event_id = 1;
+  int32 uid = 2;
+  int32 team_id = 3;
+  int32 agree_terms = 4;
+  int32 selection_target_id = 5;
+  int32 application_cnt = 6;
+  int32 lottery_result_seen = 7;
+  int32 tutorial = 8;
+  int32 ep = 9;
+  int32 stage_clear_flg = 10;
+  string rewards = 11;
+  int32 boost_item_cnt = 12;
+  int32 team_ranking_result = 13;
+  int32 member_ranking_result = 14;
+}
+
+message TeamBattleMemberList {
+  repeated TeamBattleMember list = 1;
+}
+
+message TitleBackgroundMaster {
+  int32 id = 1;
+  string label = 2;
+  int32 resource_id = 3;
+  int32 is_default = 4;
+  uint32 open_date = 5;
+  uint32 close_date = 6;
+}
+
+message TitleBackgroundMasterList {
+  repeated TitleBackgroundMaster list = 1;
+}
+
+message ToolWithdrawHistory {
+  int32 id = 1;
+  int32 uid = 2;
+  string name = 3;
+  int32 target_type = 4;
+  int32 target_id = 5;
+  string information = 6;
+  int32 before_quantity = 7;
+  int32 after_quantity = 8;
+  string admin_user = 9;
+  string reason = 10;
+}
+
+message ToolWithdrawHistoryList {
+  repeated ToolWithdrawHistory list = 1;
+}
+
+message VrContent {
+  int32 uid = 1;
+  int32 vr_content_id = 2;
+}
+
+message VrContentList {
+  repeated VrContent list = 1;
+}
+
+message Work {
+  int32 uid = 1;
+  int32 daily_count = 2;
+  int32 total_count = 3;
+  int32 daily_update_count = 4;
+  int32 daily_reset_count = 5;
+  int32 result_count1 = 6;
+  int32 result_count2 = 7;
+  int32 result_count3 = 8;
+  uint32 last_work_date = 9;
+  uint32 last_lineup_update_date = 10;
+  uint32 last_reset_date = 11;
+}
+
+message WorkList {
+  repeated Work list = 1;
+}
+
+message WorkLineup {
+  int32 id = 1;
+  int32 uid = 2;
+  int32 work_id = 3;
+  int32 status = 4;
+  int32 expect_value = 5;
+  int32 result = 6;
+  int32 lotted_condition_id_1 = 7;
+  int32 lotted_condition_id_2 = 8;
+  int32 lotted_condition_id_3 = 9;
+  string card_ids = 10;
+  string card_results = 11;
+  int64 mvp_card_id = 12;
+  string lotted_reward_seq_ids1 = 13;
+  string lotted_reward_seq_ids2 = 14;
+  string lotted_reward_seq_ids3 = 15;
+  uint32 start_date = 16;
+  uint32 end_date = 17;
+  int32 short_min = 18;
+  int32 add_coin = 19;
+}
+
+message WorkLineupList {
+  repeated WorkLineup list = 1;
+}
+
+message WorkMemberSummary {
+  int32 uid = 1;
+  int32 member_id = 2;
+  int32 work_count = 3;
+  int32 mvp_count = 4;
+}
+
+message WorkMemberSummaryList {
+  repeated WorkMemberSummary list = 1;
+}
+
+message Shop {
+  int32 id = 1;
+  int32 all_stock_remain = 2;
+  int32 user_stock_remain = 3;
+  string all_stock_next_charge = 4;
+  string user_stock_next_charge = 5;
+}
+
+message ShopList {
+  repeated Shop list = 1;
+}
+

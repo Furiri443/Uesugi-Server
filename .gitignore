@@ -1,0 +1,14 @@
+config.json
+gotopazu.db
+gotopazu.db-shm
+gotopazu.db-wal
+database.sqlite
+target/
+gotopazu/
+docs/
+logs/
+src/.DS_Store
+src/main/.DS_Store
+src/main/resources/.DS_Store
+src/main/resources/config.json
+src/test/java/com/emu/tqqserver/TestLoad.class

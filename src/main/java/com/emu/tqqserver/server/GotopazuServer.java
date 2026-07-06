@@ -1,0 +1,95 @@
+package com.emu.tqqserver.server;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import com.emu.tqqserver.db.DatabaseManager;
+import com.emu.tqqserver.network.websocket.GameServerInitializer;
+import com.emu.tqqserver.service.MasterDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Main entry point — chạy trên một port duy nhất.
+ *
+ * <p>Tất cả traffic đều qua cùng port (mặc định 8080):
+ * <ul>
+ *   <li>{@code POST /account/*, /user/*, /puzzle/*, …}        → API handlers</li>
+ *   <li>{@code POST /resource/list/{Android|Ios}}             → Resource list (proto)</li>
+ *   <li>{@code GET  /assets-cancer/Resources/{p}/{hash}}      → CDN serve từ assets_cdn/</li>
+ *   <li>{@code GET  /ws} (Upgrade: websocket)                 → GameWebSocketHandler</li>
+ *   <li>{@code GET  /health}                                  → health check</li>
+ * </ul>
+ *
+ * <p><b>Discovered server URLs</b>:
+ * <ul>
+ *   <li>API:    {@code https://www-cancer.enish-games.com}  → port 8080</li>
+ *   <li>Assets: {@code https://assets.enish-games.com}      → port 8080 (same)</li>
+ *   <li>WS RT:  {@code ws://rt-cancer.enish-games.com}      → port 8080 (same, /ws)</li>
+ * </ul>
+ */
+public class GotopazuServer {
+
+    private static final Logger log = LoggerFactory.getLogger(GotopazuServer.class);
+
+    public static final String GAME_CODENAME = "cancer";
+    public static final int    DEFAULT_PORT   = 8080;
+
+    private final ServerConfig config;
+
+    public GotopazuServer(ServerConfig config) {
+        this.config = config;
+    }
+
+    public void start() throws InterruptedException {
+        System.setProperty("gotopazu.resource.list.dir", config.getResourceListDir());
+        System.setProperty("gotopazu.cdn.dir", config.getCdnDir());
+
+        DatabaseManager.getInstance().initialize(config.getDbPath());
+        MasterDataService.initialize(config.getResourceListDir());
+        
+        log.info("Pre-loading master data...");
+        long startMs = System.currentTimeMillis();
+        MasterDataService.getInstance().getAllBytes();
+        log.info("Pre-loaded master data in {} ms", System.currentTimeMillis() - startMs);
+
+        com.emu.tqqserver.service.IAPProductService.initialize(config.getResourceListDir());
+        com.emu.tqqserver.service.NoticeService.initialize(config.getResourceListDir());
+
+        com.emu.tqqserver.console.ConsoleCommandManager.startConsoleThread();
+
+        EventLoopGroup boss   = new NioEventLoopGroup(1);
+        EventLoopGroup worker = new NioEventLoopGroup();
+
+        try {
+            ChannelFuture future = new ServerBootstrap()
+                .group(boss, worker)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new GameServerInitializer(config))
+                .option(ChannelOption.SO_BACKLOG, 256)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .bind(config.getHost(), config.getPort())
+                .sync();
+
+            log.info("━━━ ごとぱず private server ━━━");
+            log.info("Host    : {}", config.getHost());
+            log.info("Port    : {}", config.getPort());
+            log.info("CDN dir : {}", config.getCdnDir());
+            log.info("Res dir : {}", config.getResourceListDir());
+            log.info("DB      : {}", config.getDbPath());
+            log.info("Endpoints: API + CDN + WebSocket on same port");
+
+            future.channel().closeFuture().sync();
+        } finally {
+            worker.shutdownGracefully();
+            boss.shutdownGracefully();
+            DatabaseManager.getInstance().close();
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        new GotopazuServer(ServerConfig.fromArgs(args)).start();
+    }
+}

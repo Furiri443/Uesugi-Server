@@ -1,0 +1,1267 @@
+syntax = "proto3";
+
+package pkg_proto;
+
+option java_package = "com.emu.tqqserver.proto.pkg_proto";
+option java_outer_classname = "ProtoProto";
+option java_multiple_files = true;
+
+import "pmaster.proto";
+import "pmisc.proto";
+import "prealtime.proto";
+import "puser.proto";
+
+message Master {
+  StoredData stored_data = 1;
+  pkg_pmaster.All all = 2;
+}
+
+message Error {
+  StoredData stored_data = 1;
+  Error error = 2;
+}
+
+message Nocontent {
+  StoredData stored_data = 1;
+}
+
+message Cert {
+  string token = 1;
+  pkg_pmaster.Version version = 2;
+}
+
+message StoredData {
+  repeated string clear = 1;
+  pkg_puser.User user = 2;
+  pkg_puser.Currency currency = 3;
+  pkg_puser.Puzzle puzzle = 4;
+  repeated pkg_puser.Appointment appointment = 5;
+  pkg_puser.Options options = 6;
+  pkg_puser.MemberDearlevelFlag member_dearlevel_flag = 7;
+  repeated pkg_puser.Member member = 8;
+  repeated pkg_puser.Unit unit = 9;
+  repeated pkg_puser.Chapter chapter = 10;
+  repeated pkg_puser.Stage stage = 11;
+  repeated pkg_puser.Card card = 12;
+  repeated pkg_puser.Item item = 13;
+  repeated pkg_puser.MemberPicture member_picture = 14;
+  repeated pkg_pmisc.MemberDearpoint member_dearpoint = 15;
+  repeated pkg_puser.HomeBackground home_background = 16;
+  repeated pkg_puser.Book book = 17;
+  repeated pkg_puser.Story story = 18;
+  repeated pkg_puser.CardStory card_story = 19;
+  repeated pkg_puser.Vip vip = 20;
+  repeated pkg_pmisc.GachaHistory gacha_history = 21;
+  repeated pkg_pmisc.ShopStock shop_stock = 22;
+  repeated pkg_pmisc.Challenge challenge = 23;
+  pkg_pmisc.ShopFragmentLock shop_fragment_lock = 24;
+  int32 present_count = 25;
+  map<int32, int64> unlock_stories = 26;
+  int32 review = 27;
+  int32 login_bonus_flag = 28;
+  int32 news_latest_id = 29;
+  int32 news_unread_count = 30;
+  ChallengeDoneCount challenge_done = 31;
+  repeated pkg_puser.EncorePuzzle encore_puzzle = 32;
+  repeated pkg_pmaster.Encore encore = 33;
+  repeated int32 func_tutorial_ids = 34 [packed=true];
+  int32 received_greeting_count = 35;
+  repeated UnlockDearlevel unlock_dearlevels = 37;
+  pkg_pmaster.AppointmentSurprise appointment_surprise = 38;
+  repeated FeatureEffect feature_effects = 39;
+  map<int32, int32> feature_selection_ids = 40;
+  repeated int32 feature_unread_lottery_result_ids = 42 [packed=true];
+  pkg_pmisc.PlayerTitleSummaryList player_title_summary = 43;
+  repeated pkg_puser.ChapterExpire chapter_expire = 44;
+  repeated pkg_pmisc.ShopDearpointStock shop_dearpoint_stock = 45;
+  repeated pkg_pmaster.HomeMessage home_messgae = 46;
+  repeated pkg_pmaster.ChallengeGroup challenge_group = 47;
+  repeated pkg_pmaster.VrContent vr_content = 48;
+  repeated pkg_puser.StageFailLock stage_fail_lock = 50;
+  repeated pkg_pmaster.RetryableQuest retryable_quest = 51;
+  repeated pkg_pmaster.RetryableChapter retryable_chapter = 52;
+  repeated pkg_pmaster.RetryableStageGroup retryable_stage_group = 53;
+  pkg_puser.RetryablePuzzle retryable_puzzle = 54;
+  pkg_pmisc.Work work = 55;
+  repeated pkg_pmisc.WorkLineup work_lineup = 56;
+  repeated pkg_pmisc.WorkMemberSummary work_member_summary = 57;
+  repeated pkg_pmaster.UnitSkill unit_skill = 58;
+  repeated pkg_pmaster.FeatureCoupon feature_coupon = 64;
+  repeated pkg_pmaster.FeatureAppointment feature_appointment = 65;
+  pkg_puser.HomePicture home_picture = 66;
+  repeated pkg_pmisc.FeatureTreasureHuntingStage feature_treasure_hunting_stage = 67;
+  repeated pkg_pmaster.FeatureItem feature_item = 68;
+  repeated int64 growth_reward_card_ids = 70 [packed=true];
+  repeated pkg_pmaster.GachaBonusChoice gacha_bonus_choice = 73;
+  repeated pkg_pmaster.GachaBox gacha_box = 74;
+  repeated pkg_pmisc.FeatureRevival feature_revival = 75;
+  map<int32, int32> collection_reward_flags = 76;
+  repeated pkg_pmaster.Bgm bgm = 77;
+  repeated pkg_pmisc.GachaOmakeHistory gacha_omake_history = 78;
+  repeated pkg_pmisc.FreeGachaCount free_gacha_count = 79;
+  repeated pkg_pmaster.TeamBattleStage team_battle_stage = 80;
+  pkg_puser.TeamBattlePuzzle team_battle_puzzle = 81;
+  map<int32, int32> team_battle_selection_ids = 82;
+  repeated int32 team_battle_unread_lottery_result_ids = 83 [packed=true];
+  repeated pkg_pmaster.GroupPhoto group_photo = 84;
+  repeated pkg_pmaster.SpecialContent special_content = 85;
+  repeated pkg_pmaster.AppIcon app_icon = 86;
+  repeated pkg_puser.HomeActor home_actor = 87;
+  repeated pkg_pmaster.PhotoBooth photo_booth = 88;
+  repeated pkg_puser.BondsSeason bonds_season = 89;
+  pkg_puser.Mileage mileage = 90;
+  repeated pkg_pmaster.HomeMemberClothes home_member_clothes = 91;
+  repeated pkg_pmaster.HomeMemberTapMotion home_member_tap_motion = 92;
+  repeated pkg_pmaster.StillPicture still_picture = 93;
+  repeated pkg_pmisc.ShopExchangeLock shop_exchange_lock = 94;
+  BondsSeasonRanking bonds_season_ranking = 95;
+  int32 friend_approval_count = 96;
+  int32 friend_can_greeting_count = 97;
+  BondsSeasonRanking last_bonds_season_ranking = 98;
+  repeated int32 chat_unread_categories = 99 [packed=true];
+  FeatureTeamMember feature_team_member = 100;
+  repeated pkg_pmaster.PhotoStamp photo_stamp = 101;
+  map<int32, int32> feature_team_create = 102;
+  repeated pkg_pmaster.ShopChallenge shop_challenge = 103;
+  repeated pkg_pmaster.Advertising advertising = 104;
+  repeated pkg_puser.BondsSeasonUnlock bonds_season_unlock = 105;
+  repeated CookingTray cooking_tray = 106;
+  repeated pkg_pmaster.CookingRecipe cooking_recipe = 107;
+  pkg_puser.CookingSummary cooking_summary = 108;
+  repeated int32 daily_unseen_lottery_result_ids = 109 [packed=true];
+  repeated pkg_pmisc.MemberLikabilitypoint member_likabilitypoint = 110;
+  pkg_puser.MemberLikabilitylevelFlag member_likabilitylevel_flag = 111;
+  repeated UnlockLikabilitylevel unlock_likabilitylevels = 112;
+}
+
+message BondsSeasonRanking {
+  int32 season_id = 1;
+  int32 score = 2;
+  int32 rank = 3;
+}
+
+message ChallengeDoneCount {
+  int32 total = 1;
+  int32 daily = 2;
+  int32 limit_day = 3;
+  int32 beginner = 4;
+  repeated int32 beginner_list = 5 [packed=true];
+}
+
+message Goods {
+  int32 category = 1;
+  int32 target_id = 2;
+  int32 quantity = 3;
+  GoodsCardParam card_param = 4;
+  repeated string bonus = 5;
+  int32 reward_id = 6;
+  int32 reward_seq_id = 7;
+  HomeMemberPictureParam home_member_picture_param = 8;
+  string coupon_code = 9;
+  string unit_skill_unique_id = 11;
+  int32 feature_item_chapter_id = 12;
+}
+
+message GoodsCardParam {
+  int32 level = 1;
+  int32 active_skill_level = 2;
+  int32 passive_skill_level1 = 3;
+  int32 passive_skill_level2 = 4;
+  int32 passive_skill_level3 = 5;
+  int32 property_id = 6;
+  int32 property_id2 = 7;
+  int32 card_premium_id = 8;
+  int32 is_pair_card = 9;
+  int32 is_signed_card = 10;
+  int32 serial_number = 11;
+  int32 limibreak_rank = 12;
+  int32 interlude_voice1 = 13;
+  int32 interlude_voice2 = 14;
+  int32 interlude_voice3 = 15;
+  int32 interlude_voice4 = 16;
+  int32 interlude_voice5 = 17;
+}
+
+message HomeMemberPictureParam {
+  int32 resource_id = 1;
+  int32 home_member_picture_id = 2;
+}
+
+message ListUser {
+  int32 uid = 1;
+  int32 level = 2;
+  string name = 3;
+  string comment = 4;
+  uint32 last_login_ts = 5;
+  int32 player_title_id = 6;
+  int32 player_title_target_id = 7;
+  int32 block = 8;
+  pkg_pmaster.Card leader = 9;
+  pkg_puser.Greeting greeting = 12;
+  string friend = 13;
+  int32 is_sender = 14;
+  int32 player_title_ranking = 15;
+  bool can_help_cooking = 16;
+}
+
+message ListUsers {
+  StoredData stored_data = 1;
+  repeated ListUser list = 2;
+}
+
+message RankUser {
+  int32 uid = 1;
+  string name = 2;
+  int32 rank = 3;
+  int32 score = 4;
+}
+
+message RankListUser {
+  ListUser user = 1;
+  int32 rank = 2;
+  int32 score = 3;
+  int32 ep_boost_rate = 4;
+}
+
+message EventPlayingPolicy {
+}
+
+message Profile {
+  int32 uid = 1;
+  int32 level = 2;
+  string nickname = 3;
+  string lastname = 4;
+  string firstname = 5;
+  int32 player_title_id = 6;
+  int32 player_title_target_id = 7;
+  int32 follow = 8;
+  int32 block = 9;
+  pkg_puser.Unit unit = 13;
+  string comment = 14;
+  int32 story = 15;
+  int32 voice = 16;
+  int32 picture = 17;
+  int32 movie = 18;
+  int32 chat = 19;
+  int32 voice_message = 20;
+  int32 player_title_num = 22;
+  UnitCard profile_card = 23;
+  int32 profile_background_id = 24;
+  int32 follower = 25;
+  int32 is_silver = 26;
+  int32 is_gold = 27;
+  uint32 created_at = 28;
+  int32 favorite_characters = 29;
+  int32 event_playing_policy = 30;
+  int32 bonds_score = 31;
+  int32 bonds_rank = 32;
+  map<int32, StageClearSummary> stage_results = 33;
+  map<int32, int32> event_results = 34;
+  bytes profile_picture = 35;
+  map<int64, UnitCard> active_cards = 36;
+  string friend = 37;
+  int32 is_sender = 38;
+  int32 player_title_ranking = 39;
+  int32 score = 40;
+  LikeSummary like_summary = 41;
+  uint32 last_liked_ts = 42;
+  bool can_help_cooking = 43;
+}
+
+message StageClearSummary {
+  int32 clear = 1;
+  int32 total = 2;
+}
+
+message UnitCard {
+  int32 idx = 1;
+  pkg_pmaster.Card card = 2;
+}
+
+message PuzzleStart {
+  StoredData stored_data = 1;
+  ListUser helper = 2;
+}
+
+message PuzzleResult {
+  StoredData stored_data = 1;
+  bool new_record = 2;
+  int32 score = 3;
+  repeated Goods stage_clear_reward = 4;
+  repeated Goods stage_drop_reward = 5;
+  repeated Goods stage_first_clear_reward = 6;
+  repeated Goods stage_rank_s_reward = 7;
+  repeated Goods chapter_perfect_reward = 8;
+  repeated Goods chapter_complete_reward = 9;
+  int32 player_level = 10;
+  int32 player_exp = 11;
+  repeated PuzzleCard unit = 12;
+  ListUser helper = 13;
+  EventPuzzleResult event_result = 14;
+  map<int32, int32> relationship_dearpoint = 15;
+  repeated PuzzleTreasure puzzle_treasure = 16;
+  repeated int32 applied_stage_boost_campaign = 17 [packed=true];
+  repeated int32 applied_campaign = 18 [packed=true];
+  map<int32, int32> membership_dearpoint = 19;
+  FortunePuzzleResult fortune_puzzle_result = 20;
+  BondsSeasonRanking bonds_season_ranking = 21;
+  RankUser practice_exam_stage_daily_score_ranking = 22;
+  RankUser practice_exam_stage_total_score_ranking = 23;
+  bool practice_exam_stage_daily_score_updated_flg = 24;
+  bool practice_exam_stage_total_score_updated_flg = 25;
+}
+
+message EventPuzzleResult {
+  int32 total_ep = 1;
+  int32 rank = 2;
+  repeated EpDetail ep_detail = 3;
+  repeated EpReward ep_reward = 4;
+  repeated EpReward team_ep_reward = 5;
+  string encore_puid = 6;
+  repeated Goods encore_clear_reward = 7;
+  repeated Goods encore_drop_reward = 8;
+  repeated Goods encore_first_clear_reward = 9;
+  repeated Goods encore_rank_s_reward = 10;
+  repeated Goods drop_feature_item = 11;
+  int32 encore_id = 12;
+  int32 encore_stage_id = 13;
+  int32 lotted_ep_fever_rating = 14;
+  int32 gain_ep_fever_rating = 15;
+  int32 gain_encore_rank_rating = 16;
+  int32 nakayoshi_ep_stock = 17;
+}
+
+message EpDetail {
+  string keys = 1;
+  int32 ep = 2;
+  string label = 3;
+  int32 effect = 4;
+}
+
+message EpReward {
+  int32 ep = 1;
+  Goods reward = 2;
+}
+
+message FortunePuzzleResult {
+  uint32 rank = 1;
+  string rankText = 2;
+  uint32 animation_type = 3;
+  string se_text = 4;
+  repeated Goods fortune_reward = 5;
+}
+
+message PuzzleCard {
+  pkg_pmaster.Card card = 2;
+  int32 base_exp = 3;
+  int32 vip_exp = 4;
+  repeated string bonus = 5;
+  int32 relationship_exp = 6;
+}
+
+message Ranking {
+  repeated RankUser ranker = 1;
+  RankUser player = 2;
+  int32 total = 3;
+}
+
+message PuzzleRanking {
+  StoredData stored_data = 1;
+  Ranking leader = 2;
+  Ranking friend = 3;
+}
+
+message PuzzleHelper {
+  StoredData stored_data = 1;
+  repeated ListUser helpers = 2;
+  int32 next_friend_index = 3;
+  int32 next_non_friend_index = 4;
+}
+
+message PresentList {
+  StoredData stored_data = 1;
+  repeated pkg_pmisc.Present list = 2;
+}
+
+message PresentResult {
+  StoredData stored_data = 1;
+  int32 request_cnt = 2;
+  int32 receive_cnt = 3;
+  repeated Goods goods = 4;
+  repeated pkg_pmisc.Present list = 5;
+}
+
+message GachaSerialNumberList {
+  repeated GachaSerialNumber gacha_serial_number_list = 1;
+}
+
+message GachaSerialNumber {
+  int32 gacha_id = 1;
+  repeated SerialNumber serial_number_list = 2;
+}
+
+message SerialNumber {
+  int32 card_id = 1;
+  int32 serial_number = 2;
+  int32 max_serial_number = 3;
+}
+
+message GachaResult {
+  StoredData stored_data = 1;
+  repeated Goods cards = 2;
+  repeated Goods rewards = 3;
+  int32 choice_bonus_idx = 4;
+  int32 panel_point_before = 5;
+  int32 panel_point_after = 6;
+  repeated Goods count_gacha_rewards = 7;
+}
+
+message AppointmentResult {
+  StoredData stored_data = 1;
+  repeated Goods rewards = 2;
+  int32 dearpoint = 3;
+  bool dearlevel_flag = 4;
+}
+
+message ReviewURLResult {
+  StoredData stored_data = 1;
+  string url = 2;
+}
+
+message NoticeAll {
+  StoredData stored_data = 1;
+  repeated NoticeNews news_list = 2;
+  repeated NoticeLoginBonus login_bonus_list = 3;
+}
+
+message NoticeNews {
+  int32 id = 1;
+  int32 category = 2;
+  int32 type = 3;
+  int32 priority = 4;
+  int32 banner_type = 5;
+  int32 banner_id = 6;
+  string title = 7;
+  string body = 8;
+  string open_date = 9;
+  string close_date = 10;
+  int32 is_read = 11;
+  int32 is_force = 13;
+}
+
+message NoticeLoginBonus {
+  int32 id = 1;
+  int32 num = 2;
+  int32 season_id = 3;
+}
+
+message ShopList {
+  StoredData stored_data = 1;
+  repeated pkg_pmaster.Shop list = 2;
+}
+
+message ShopResult {
+  StoredData stored_data = 1;
+  repeated int32 id = 2 [packed=true];
+  int32 quantity = 3;
+}
+
+message AwakeResult {
+  StoredData stored_data = 1;
+  int32 before_resource_idx = 2;
+  int32 after_resource_idx = 3;
+  int32 new_picture_bonds_point = 4;
+}
+
+message EnhancementResult {
+  StoredData stored_data = 1;
+  int32 limitbreak_rank = 2;
+  int32 bonds_point = 3;
+  int32 new_voice_bonds_point = 4;
+  int32 score = 5;
+  int32 card_level = 6;
+  int32 card_exp = 7;
+  int32 card_exp_base = 8;
+  int32 card_exp_vip = 9;
+  int32 card_exp_campaign = 10;
+  int32 card_max_level = 11;
+  int32 active_skill_level = 12;
+  int32 active_skill_exp = 13;
+  bool passive_skill_1 = 14;
+  bool passive_skill_2 = 15;
+  bool passive_skill_3 = 16;
+  repeated int32 picture = 17 [packed=true];
+  repeated int32 voice = 18 [packed=true];
+  int32 before_resource_idx = 19;
+  int32 after_resource_idx = 20;
+  pkg_pmaster.Card tutorial_card = 21;
+  int32 card_exp_relationship = 22;
+  int32 active_skill_exp_relationship = 23;
+  repeated int32 applied_campaign = 24 [packed=true];
+  map<int32, int32> new_picture_bonds_point = 25;
+}
+
+message ChallengeListAll {
+  StoredData stored_data = 1;
+  ChallengeList total_list = 2;
+  ChallengeList daily_list = 3;
+  ChallengeList limit_list = 4;
+}
+
+message ChallengeList {
+  StoredData stored_data = 1;
+  ChallengeList list = 2;
+}
+
+message ChallengeReceiveResult {
+  StoredData stored_data = 1;
+  int32 request_cnt = 2;
+  int32 receive_cnt = 3;
+  repeated Goods goods = 4;
+}
+
+message ReferentialConstraintViolationTable {
+  string name = 1;
+  repeated string primaryKeyNames = 2;
+  repeated ReferentialConstraintViolationColumn columns = 3;
+}
+
+message ReferentialConstraintViolationTableList {
+  repeated ReferentialConstraintViolationTable list = 1;
+}
+
+message ReferentialConstraintViolationColumn {
+  string name = 1;
+  repeated ReferentialConstraintViolationColumnRefPart refPart = 2;
+}
+
+message ReferentialConstraintViolationColumnRefPart {
+  ReferentialConstraintViolationRefKey reference = 1;
+  repeated ReferentialConstraintViolationValue values = 2;
+}
+
+message ReferentialConstraintViolationValue {
+  repeated string value = 1;
+  repeated string primaryKeyValues = 2;
+}
+
+message ReferentialConstraintViolationRefKey {
+  string table = 1;
+  string column = 2;
+}
+
+message ResultItemSell {
+  StoredData stored_data = 1;
+  int32 leaf = 2;
+}
+
+message RankingData {
+  repeated RankListUser list = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  int32 total = 4;
+}
+
+message DearpointRanking {
+  StoredData stored_data = 1;
+  RankingData ranking = 2;
+  RankListUser previous_top_user = 3;
+}
+
+message DearpointRankingHistory {
+  int32 season_id = 1;
+  int32 rank = 2;
+  int32 score = 3;
+}
+
+message DearpointRankingHistoryList {
+  StoredData stored_data = 1;
+  repeated DearpointRankingHistory list = 2;
+}
+
+message BondsRanking {
+  StoredData stored_data = 1;
+  RankingData ranking = 2;
+}
+
+message BondsRankingHistory {
+  int32 season_id = 1;
+  int32 rank = 2;
+  int32 score = 3;
+  int32 member_id = 4;
+}
+
+message BondsRankingHistoryList {
+  StoredData stored_data = 1;
+  repeated BondsRankingHistory list = 2;
+}
+
+message FeatureTop {
+  StoredData stored_data = 1;
+  int32 feature_id = 2;
+  int32 ep = 3;
+  int32 rank = 4;
+  int32 tutorial = 5;
+  int32 agree_terms = 6;
+  int32 selection_target_id = 7;
+  int32 lottery_result_state = 8;
+  int32 lottery_result_seen = 9;
+  int32 application_cnt = 10;
+  FriendEpBoost friend_boost = 11;
+  FeatureTeam team = 12;
+  repeated FeatureTeamRequest team_request = 13;
+  int32 team_request_send = 14;
+  int32 team_id_user_was_kicked = 15;
+  pkg_pmisc.FeatureNakayoshi feature_nakayoshi = 16;
+  repeated pkg_pmisc.FeatureNakayoshiPt feature_nakayoshi_pt = 17;
+  PracticeExamRankingResult practice_exam_ranking_result = 18;
+}
+
+message PracticeExamRankingResult {
+  repeated PracticeExamDailyRankingReward daily_ranking_reward_list = 1;
+  repeated PracticeExamTotalRankingReward total_ranking_reward_list = 2;
+}
+
+message PracticeExamDailyRankingReward {
+  string date = 1;
+  int32 stage_id = 2;
+  int32 score = 3;
+  int32 rank = 4;
+  repeated int32 reward_ids = 5 [packed=true];
+}
+
+message PracticeExamTotalRankingReward {
+  int32 stage_id = 1;
+  int32 score = 2;
+  int32 rank = 3;
+  repeated int32 reward_ids = 4 [packed=true];
+}
+
+message FeatureTeamSearch {
+  repeated FeatureTeam request_team = 1;
+  repeated FeatureTeam search_team = 2;
+}
+
+message FeatureTeam {
+  FeatureTeam team = 1;
+  repeated FeatureTeamMember member = 2;
+}
+
+message FeatureTeamMember {
+  ListUser user = 1;
+  FeatureTeamMember member = 2;
+  int32 ep_boost_rate = 3;
+}
+
+message FeatureTeamRequest {
+  ListUser user = 1;
+  FeatureTeamRequest team_request = 2;
+  int32 ep_boost_rate = 3;
+}
+
+message FeatureTeamRanking {
+  StoredData stored_data = 1;
+  TeamRankingData ranking = 2;
+  int32 feature_id = 3;
+}
+
+message TeamRankingData {
+  repeated RankListTeam list = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  int32 total = 4;
+}
+
+message RankListTeam {
+  FeatureTeam team = 1;
+  int32 rank = 2;
+  int32 score = 3;
+}
+
+message FeatureResult {
+  string ExternalLink = 1;
+}
+
+message FeatureRanking {
+  StoredData stored_data = 1;
+  RankingData ranking = 2;
+  int32 feature_id = 3;
+}
+
+message AchievementRanking {
+  StoredData stored_data = 1;
+  int64 term_ts_from = 2;
+  int64 term_ts_to = 3;
+  RankingData ranking = 4;
+}
+
+message FollowCount {
+  StoredData stored_data = 1;
+  int32 follow_count = 2;
+  int32 follower_count = 3;
+  int32 block_count = 4;
+  int32 remain_greeting_count = 5;
+}
+
+message GreetingResult {
+  StoredData stored_data = 1;
+  int32 greeting_count = 2;
+  repeated int32 greeting_user_ids = 3 [packed=true];
+}
+
+message ReceiveGreetingResult {
+  StoredData stored_data = 1;
+  int32 receive_count = 2;
+  repeated ListUser receive_user = 3;
+}
+
+message UnlockDearlevel {
+  int32 member_id = 1;
+  int32 before_level = 2;
+  int32 after_level = 3;
+}
+
+message UnlockLikabilitylevel {
+  int32 member_id = 1;
+  int32 before_level = 2;
+  int32 after_level = 3;
+}
+
+message ImportFileNameList {
+  repeated string list = 1;
+}
+
+message FeatureEffect {
+  int32 feature_id = 1;
+  int32 ep_fever_rating = 2;
+  uint32 ep_fever_expires_at = 3;
+  int32 encore_rank_rating = 4;
+  uint32 encore_rank_expires_at = 5;
+}
+
+message SeasonRanking {
+  StoredData stored_data = 1;
+  int32 ranking = 2;
+}
+
+message WatchVrData {
+  StoredData stored_data = 1;
+  string resource_name = 2;
+}
+
+message WorkResultList {
+  StoredData stored_data = 1;
+  repeated WorkResult work_result = 2;
+}
+
+message WorkResult {
+  StoredData stored_data = 1;
+  int32 work_id = 2;
+  int32 player_level = 3;
+  int32 player_exp = 4;
+  int32 player_add_exp = 5;
+  repeated pkg_pmaster.Card card = 6;
+  repeated Goods clear_reward = 7;
+}
+
+message ReduceUnitSkillResult {
+  StoredData stored_data = 1;
+  repeated Goods rewards = 2;
+}
+
+message SetCardSpecialSlotResult {
+  StoredData stored_data = 1;
+  repeated Goods rewards = 2;
+}
+
+message ExchangeCardSpecialSlotResult {
+  StoredData stored_data = 1;
+  repeated Goods rewards = 2;
+}
+
+message FeatureTreasureHuntingExchangeItems {
+  StoredData stored_data = 1;
+  repeated FeatureTreasureHuntingExchangeItem items = 2;
+}
+
+message FeatureTreasureHuntingExchangeItem {
+  FeatureTreasureHuntingExchangeItem mst = 1;
+  int32 exchanged_cnt = 2;
+}
+
+message FeatureTreasureHuntingExchangeResult {
+  StoredData stored_data = 1;
+  repeated Goods rewards = 2;
+  repeated FeatureTreasureHuntingExchangeItem items = 3;
+}
+
+message CardReceiveGrowthRewardResult {
+  StoredData stored_data = 1;
+  int32 receive_count = 2;
+}
+
+message PuzzleTreasure {
+  int32 type = 1;
+  int32 count = 2;
+  repeated Goods rewards = 3;
+}
+
+message LotteryTop {
+  StoredData stored_data = 1;
+  pkg_pmisc.LotteryTerm agree_terms = 2;
+  pkg_pmisc.LotteryEntryList entry_list = 3;
+}
+
+message LotteryResult {
+  StoredData stored_data = 1;
+  pkg_pmisc.LotteryEntryList entry_list = 2;
+  string ExternalLink = 3;
+}
+
+message TutorialFinishResult {
+  StoredData stored_data = 1;
+  repeated Goods tutorial_finish_rewards = 2;
+}
+
+message BookManageInfo {
+  StoredData stored_data = 1;
+  pkg_pmisc.BookManage book_manage = 2;
+  pkg_pmisc.BookManageDetailList book_manage_detail_list = 3;
+  pkg_pmaster.CollectionRewardList collection_reward_list = 4;
+}
+
+message Collection {
+  StoredData stored_data = 1;
+  Collection collection = 2;
+  repeated CollectionPage page_list = 3;
+}
+
+message CollectionPage {
+  int32 uid = 1;
+  int32 idx = 2;
+  string title = 3;
+  int32 layout_id = 4;
+  int32 theme_id = 5;
+  int32 page_sort = 6;
+  int32 transition_id = 7;
+  repeated CollectionElement collection_elements = 8;
+}
+
+message CollectionElement {
+  int32 idx = 1;
+  int32 type = 2;
+  int64 id = 3;
+  pkg_pmaster.Card card = 4;
+  pkg_pmaster.GroupPhoto group_photo = 7;
+}
+
+message CollectionReward {
+  StoredData stored_data = 1;
+  CollectionReward collection_reward = 2;
+  repeated Goods goods = 3;
+}
+
+message TeamBattleTop {
+  StoredData stored_data = 1;
+  pkg_pmisc.TeamBattleMember team_battle_member = 2;
+  RankUser member_ranking = 3;
+  int32 lottery_result_state = 5;
+  int32 lottery_result_seen = 6;
+  int32 application_cnt = 7;
+  int32 current_stage_id = 8;
+  int32 current_stage_difficulty = 9;
+}
+
+message TeamBattleRankingReward {
+  int32 quest_id = 1;
+  int32 stage_id = 2;
+  repeated Goods rewards = 3;
+}
+
+message TeamBattleTreasure {
+  int32 treasure_type = 1;
+  int32 treasure_count = 2;
+  repeated Goods rewards = 3;
+}
+
+message TeamBattleStepResult {
+  StoredData stored_data = 1;
+  int32 step = 2;
+  int32 gold = 3;
+  int32 silver = 4;
+  int32 bronze = 5;
+}
+
+message TeamBattleSkipResult {
+  StoredData stored_data = 1;
+  PuzzleResult puzzle_result = 2;
+  pkg_pmisc.TeamBattleMember team_battle_member = 3;
+  RankUser member_ranking = 4;
+  int32 current_stage_id = 6;
+  int32 current_stage_difficulty = 7;
+}
+
+message TeamBattleRanking {
+  StoredData stored_data = 1;
+  RankingData ranking = 2;
+  int32 rank = 3;
+}
+
+message TeamBattleResult {
+  string ExternalLink = 1;
+}
+
+message TeamBattleTeamStatus {
+  map<int32, uint32> team_total_ep_map = 1;
+}
+
+message AccountCertificate {
+  pkg_pmaster.Version version = 1;
+}
+
+message AccountAuthorize {
+  string session = 1;
+  repeated pkg_pmaster.OpeningShow opening_shows = 2;
+  int32 term_revision = 3;
+  int32 title_background_resource_id = 4;
+}
+
+message AccountAuthorize_1_13 {
+  string session = 1;
+  int32 title_background_resource_id = 2;
+  int32 term_revision = 3;
+}
+
+message AuthorizeInheritPassword {
+  string code = 1;
+}
+
+message PaymentAccount {
+  bool birthday = 1;
+  int32 monthly_payment_limit = 2;
+  double monthly_payment_amount = 3;
+}
+
+message IAPProduct {
+  uint32 id = 1;
+  string product_id = 2;
+  string name = 3;
+  string consume_type = 4;
+  string selling_type = 5;
+  string purchase_type = 6;
+  double price = 7;
+  uint32 coin = 8;
+  bool enabled = 9;
+  uint32 start_time = 10;
+  uint32 end_time = 11;
+  uint32 purchase_count = 12;
+  uint32 purchase_count_max = 13;
+}
+
+message IAPProductList {
+  repeated IAPProduct list = 1;
+}
+
+message RequestPuzzleClear {
+  string puzzle_uniq_id = 1;
+  int32 score = 2;
+  int32 clear_type = 3;
+  int32 remain_second = 4;
+  int32 remain_count = 5;
+  int32 consumed_count = 6;
+  int32 pop_link = 7;
+  int32 combo = 8;
+  map<int32, int32> pop_count = 9;
+  map<int32, int32> active_skill = 10;
+  int32 average_chain = 11;
+  int32 average_combo = 12;
+}
+
+message RequestEncoreClear {
+  string puzzle_uniq_id = 1;
+  int32 score = 2;
+  int32 clear_type = 3;
+  int32 remain_second = 4;
+  int32 remain_count = 5;
+  int32 consumed_count = 6;
+  int32 pop_link = 7;
+  int32 combo = 8;
+  int32 feature_id = 9;
+  map<int32, int32> pop_count = 10;
+  map<int32, int32> active_skill = 11;
+  int32 average_chain = 12;
+  int32 average_combo = 13;
+}
+
+message RequestTeamBattleClear {
+  string puzzle_uniq_id = 1;
+  int32 score = 2;
+  int32 remain_second = 3;
+  int32 gold = 4;
+  int32 silver = 5;
+  int32 bronze = 6;
+  map<int32, int32> pop_count = 7;
+}
+
+message Wallet {
+  uint32 PaidCoin = 1;
+  uint32 FreeCoinA = 2;
+  uint32 FreeCoinB = 3;
+}
+
+message ItemUseResult {
+  StoredData stored_data = 1;
+  repeated Goods goods = 2;
+}
+
+message ItemPasswordResult {
+  StoredData stored_data = 1;
+  bool password_verify_failed = 2;
+  repeated Goods goods = 3;
+}
+
+message UserTitle {
+  int32 player_title_id = 1;
+  int32 ranking = 2;
+}
+
+message UserTitleMap {
+  map<int32, UserTitle> titles = 1;
+}
+
+message PlayerTitle {
+  int32 ranking = 1;
+  pkg_pmaster.Challenge challenge = 2;
+}
+
+message PlayerTitleMap {
+  map<int32, PlayerTitle> titles = 1;
+}
+
+message FriendList {
+  StoredData stored_data = 1;
+  repeated RankListUser list_users = 2;
+  int32 friend_count = 3;
+  int32 block_count = 4;
+  FriendEpBoost friend_boost = 5;
+}
+
+message FriendEpBoost {
+  int32 friend_count = 1;
+  int32 ep_boost = 2;
+}
+
+message ChatMessageList {
+  StoredData stored_data = 1;
+  repeated pkg_prealtime.ChatMessage messages = 2;
+}
+
+message ChatFriendList {
+  StoredData stored_data = 1;
+  repeated ListUser list_users = 2;
+  map<int32, bool> unreads = 3;
+}
+
+message ChatGroupCreateResult {
+  StoredData stored_data = 1;
+  pkg_prealtime.ChatGroup group = 2;
+}
+
+message ChatGroupWithInvite {
+  StoredData stored_data = 1;
+  repeated pkg_prealtime.ChatGroup groups = 2;
+  map<int32, bool> unreads = 3;
+  map<int32, bool> invites = 4;
+}
+
+message LikeSummary {
+  uint32 total = 1;
+  uint32 weekly = 2;
+  uint32 monthly = 3;
+}
+
+message ProfilePictureForTimeline {
+  int32 uid = 1;
+  int32 level = 2;
+  string name = 3;
+  bytes data = 4;
+  uint32 like_count = 5;
+  bool new_flg = 6;
+  int64 profile_photo_updated_ts = 7;
+}
+
+message ProfilePictureForTimelineList {
+  StoredData stored_data = 1;
+  repeated ProfilePictureForTimeline profile_picture_for_timeline = 2;
+}
+
+message GachaPanelBoard {
+  int32 gacha_id = 1;
+  int32 panel_point = 2;
+  repeated GachaPanel panels = 3;
+}
+
+message GachaPanel {
+  int32 panel_no = 1;
+  int32 type = 2;
+  int32 reward_id = 3;
+  int32 status = 4;
+  repeated pkg_pmaster.GachaPanelSelectPool panel_select_pools = 5;
+}
+
+message GachaPanelResult {
+  StoredData stored_data = 1;
+  int32 panel_no = 2;
+  int32 panel_point_before = 3;
+  int32 panel_point_after = 4;
+  Goods reward = 5;
+}
+
+message FeatureNakayoshiSendPtResult {
+  StoredData stored_data = 1;
+  pkg_pmisc.FeatureNakayoshi feature_nakayoshi = 2;
+  repeated pkg_pmisc.FeatureNakayoshiPt feature_nakayoshi_pt = 3;
+  int32 nakayoshi_pt_before = 4;
+  int32 nakayoshi_pt_after = 5;
+  int32 nakayoshi_lv_before = 6;
+  int32 nakayoshi_lv_after = 7;
+  repeated Goods level_up_rewards = 8;
+  repeated Goods total_level_up_rewards = 9;
+}
+
+message MiniGameTop {
+  StoredData stored_data = 1;
+  pkg_pmaster.MiniGame mini_game = 2;
+}
+
+message MiniGameStart {
+  StoredData stored_data = 1;
+  pkg_pmaster.MiniGame mini_game = 2;
+}
+
+message MiniGameDone {
+  StoredData stored_data = 1;
+  pkg_pmaster.MiniGame mini_game = 2;
+}
+
+message PracticeExamDailyScoreRanking {
+  StoredData stored_data = 1;
+  RankingData ranking = 2;
+  int32 stage_id = 3;
+  string date = 4;
+}
+
+message PracticeExamTotalScoreRanking {
+  StoredData stored_data = 1;
+  RankingData ranking = 2;
+  int32 stage_id = 3;
+}
+
+message PracticeExamUserScoreRanking {
+  StoredData stored_data = 1;
+  RankUser daily_ranking = 2;
+  RankUser total_ranking = 3;
+  int32 stage_id = 4;
+  string date = 5;
+}
+
+message PracticeExamUserDailyScoreRanking {
+  RankUser rank_user = 1;
+  int32 stage_id = 2;
+  string date = 3;
+}
+
+message PracticeExamChapterStageDailyScoreRankingList {
+  StoredData stored_data = 1;
+  repeated PracticeExamUserDailyScoreRanking daily_score_rankings = 2;
+  int32 chapter_id = 3;
+  string date = 4;
+}
+
+message PracticeExamReport {
+  StoredData stored_data = 1;
+  pkg_pmaster.PracticeExam practice_exam = 2;
+  repeated pkg_pmisc.PracticeExamTScore t_score_list = 3;
+}
+
+message PracticeExamStats {
+  StoredData stored_data = 1;
+  pkg_pmisc.PracticeExamScoreSummaryReport score_summary_report = 3;
+  map<int32, PracticeExamTScoreFrequencyDistributionList> t_score_frequency_distribution_map = 4;
+}
+
+message PracticeExamTScoreFrequencyDistributionList {
+  repeated pkg_pmisc.PracticeExamTScoreFrequencyDistribution frequency_distribution_list = 1;
+}
+
+message CookingStart {
+  StoredData stored_data = 1;
+  uint32 forecast_rank = 2;
+}
+
+message CookingTray {
+  pkg_puser.CookingTray tray = 1;
+  uint32 rank_gauge = 2;
+  bool can_help = 3;
+  repeated CookingHelper helpers = 4;
+}
+
+message CookingTrays {
+  StoredData stored_data = 1;
+  repeated CookingTray trays = 2;
+}
+
+message CookingClear {
+  StoredData stored_data = 1;
+  map<int32, CookingClearDetail> detail_map = 2;
+}
+
+message CookingClearDetail {
+  repeated CookingVisitingMember visiting_members = 1;
+  repeated Goods goods = 2;
+  int32 proficiency_level_before = 3;
+  int32 proficiency_level_after = 4;
+  repeated CookingHelper helpers = 5;
+  int32 rank = 6;
+}
+
+message CookingShorten {
+  StoredData stored_data = 1;
+  bool is_clear = 2;
+  CookingTray tray = 3;
+  CookingClearDetail detail = 4;
+}
+
+message CookingVisitingMember {
+  int32 id = 1;
+  int32 cloth_id = 2;
+}
+
+message CookingRankRewardReceive {
+  StoredData stored_data = 1;
+  repeated Goods goods = 2;
+}
+
+message CookingHelpTargets {
+  StoredData stored_data = 1;
+  bool is_friend = 2;
+  repeated int32 uids = 3 [packed=true];
+  repeated CookingTray trays = 4;
+}
+
+message CookingHelp {
+  StoredData stored_data = 1;
+  CookingTray tray = 2;
+  bool success = 3;
+}
+
+message CookingHelpers {
+  StoredData stored_data = 1;
+  repeated CookingHelper helpers = 2;
+}
+
+message CookingHelper {
+  ListUser user = 1;
+  pkg_pmisc.CookingHelpHistory history = 2;
+}
+
