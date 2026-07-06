@@ -19,15 +19,16 @@ public class UnitRoutes extends BaseRoute {
         UserEntity me = requireUser(req);
         
         com.fasterxml.jackson.databind.JsonNode json = getJsonBody(req);
+        log.info("unit/set payload: {}", json);
         if (json != null && json.has("idx")) {
             int idx = json.get("idx").asInt();
             String name = json.has("unit_name") ? json.get("unit_name").asText() : "Team " + idx;
             int[] members = new int[5];
-            int[] cards = new int[5];
+            long[] cards = new long[5];
             
             for (int i = 0; i < 5; i++) {
                 members[i] = json.has("member_id" + (i+1)) ? json.get("member_id" + (i+1)).asInt() : (i+1);
-                cards[i] = json.has("card_id" + (i+1)) ? json.get("card_id" + (i+1)).asInt() : 0;
+                cards[i] = json.has("card_id" + (i+1)) ? json.get("card_id" + (i+1)).asLong() : 0L;
             }
             
             unitDao.saveUnit(me.getUserId(), idx, name, members, cards);

@@ -88,10 +88,11 @@ public class UserService {
 
     public void ensureDefaultUnit(long userId) {
         java.util.List<Integer> defaultUnitCards = com.emu.tqqserver.game.GameContext.getInstance().getConfig().getGameDefaults().getDefaultUnitCards();
-        unitDao.createDefaultUnit(userId, defaultUnitCards);
+        List<CardEntity> userCards = getUserCards(userId);
+        unitDao.createDefaultUnit(userId, defaultUnitCards, userCards);
     }
 
-    public List<Integer> getUserCards(long userId) {
+    public List<CardEntity> getUserCards(long userId) {
         return userDao.getUserCards(userId);
     }
 

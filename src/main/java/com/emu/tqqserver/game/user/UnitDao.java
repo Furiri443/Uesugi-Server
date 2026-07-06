@@ -16,12 +16,24 @@ import java.util.List;
 public class UnitDao extends BaseDao {
     private static final Logger log = LoggerFactory.getLogger(UnitDao.class);
 
-    /** Create a default unit for a new user */
-    public void createDefaultUnit(long userId, List<Integer> defaultUnitCards) {
+    public void createDefaultUnit(long userId, List<Integer> defaultUnitCards, List<CardEntity> userCards) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "INSERT INTO user_units (user_id, idx, unit_name, member1, member2, member3, member4, member5, card1, card2, card3, card4, card5) " +
                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+
+            long[] instanceIds = new long[5];
+            for (int i = 0; i < 5; i++) {
+                int targetCardId = defaultUnitCards.size() > i ? defaultUnitCards.get(i) : (99901 + i);
+                long instanceId = 0;
+                for (CardEntity c : userCards) {
+                    if (c.getCardId() == targetCardId) {
+                        instanceId = c.getId();
+                        break;
+                    }
+                }
+                instanceIds[i] = instanceId;
+            }
 
             ps.setLong(1, userId);
             ps.setInt(2, 1);
@@ -31,11 +43,11 @@ public class UnitDao extends BaseDao {
             ps.setInt(6, 3);
             ps.setInt(7, 4);
             ps.setInt(8, 5);
-            ps.setInt(9, defaultUnitCards.size() > 0 ? defaultUnitCards.get(0) : 99901);
-            ps.setInt(10, defaultUnitCards.size() > 1 ? defaultUnitCards.get(1) : 99902);
-            ps.setInt(11, defaultUnitCards.size() > 2 ? defaultUnitCards.get(2) : 99903);
-            ps.setInt(12, defaultUnitCards.size() > 3 ? defaultUnitCards.get(3) : 99904);
-            ps.setInt(13, defaultUnitCards.size() > 4 ? defaultUnitCards.get(4) : 99905);
+            ps.setLong(9, instanceIds[0]);
+            ps.setLong(10, instanceIds[1]);
+            ps.setLong(11, instanceIds[2]);
+            ps.setLong(12, instanceIds[3]);
+            ps.setLong(13, instanceIds[4]);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -44,7 +56,7 @@ public class UnitDao extends BaseDao {
     }
 
     /** Save or update a unit */
-    public void saveUnit(long userId, int idx, String name, int[] members, int[] cards) {
+    public void saveUnit(long userId, int idx, String name, int[] members, long[] cards) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "INSERT OR REPLACE INTO user_units (user_id, idx, unit_name, member1, member2, member3, member4, member5, card1, card2, card3, card4, card5) " +
@@ -54,7 +66,7 @@ public class UnitDao extends BaseDao {
             ps.setInt(2, idx);
             ps.setString(3, name);
             for (int i = 0; i < 5; i++) ps.setInt(4 + i, members[i]);
-            for (int i = 0; i < 5; i++) ps.setInt(9 + i, cards[i]);
+            for (int i = 0; i < 5; i++) ps.setLong(9 + i, cards[i]);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -80,11 +92,11 @@ public class UnitDao extends BaseDao {
                             .setMemberId3(rs.getInt("member3"))
                             .setMemberId4(rs.getInt("member4"))
                             .setMemberId5(rs.getInt("member5"))
-                            .setCardId1(rs.getInt("card1"))
-                            .setCardId2(rs.getInt("card2"))
-                            .setCardId3(rs.getInt("card3"))
-                            .setCardId4(rs.getInt("card4"))
-                            .setCardId5(rs.getInt("card5"))
+                            .setCardId1(rs.getLong("card1"))
+                            .setCardId2(rs.getLong("card2"))
+                            .setCardId3(rs.getLong("card3"))
+                            .setCardId4(rs.getLong("card4"))
+                            .setCardId5(rs.getLong("card5"))
                             .build();
                     units.add(unit);
                 }

@@ -167,17 +167,26 @@ public class StoredDataService {
                                 .setFriendCanGreetingCount(0);
 
 
-                java.util.List<Integer> userCards = userService.getUserCards(user.getUserId());
-                for (int cardId : userCards) {
+                java.util.List<com.emu.tqqserver.game.user.CardEntity> userCards = userService.getUserCards(user.getUserId());
+                for (com.emu.tqqserver.game.user.CardEntity card : userCards) {
                     builder.addCard(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                            .setId(card.getId())
                             .setUid((int) user.getUserId())
-                            .setCardId(cardId)
-                            .setExp(1)
-                            .setLevel(1)
+                            .setCardId(card.getCardId())
+                            .setExp(card.getExp())
+                            .setLevel(card.getLevel())
+                            .setLevelAwake(card.getAwakenLevel())
+                            .setActiveSkillLevel(Math.max(1, card.getSkillLevel()))
+                            .setPassiveSkillLevel1(Math.max(1, card.getSkillLevel()))
+                            .setPassiveSkillLevel2(Math.max(1, card.getSkillLevel()))
+                            .setPassiveSkillLevel3(Math.max(1, card.getSkillLevel()))
+                            .setLimitbreakRank(0)
+                            .setAwakePriority(0)
                             .build());
                     builder.addBook(com.emu.tqqserver.proto.pkg_puser.Book.newBuilder()
+                            .setId(card.getId())
                             .setUid((int) user.getUserId())
-                            .setCardId(cardId)
+                            .setCardId(card.getCardId())
                             .build());
                 }
                 

@@ -294,14 +294,22 @@ public class UserDao extends BaseDao {
         }
     }
 
-    public List<Integer> getUserCards(long userId) {
-        List<Integer> cards = new ArrayList<>();
+    public List<CardEntity> getUserCards(long userId) {
+        List<CardEntity> cards = new ArrayList<>();
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT card_id FROM user_cards WHERE user_id = ?")) {
+             PreparedStatement ps = conn.prepareStatement("SELECT id, card_id, level, exp, skill_level, awaken_level FROM user_cards WHERE user_id = ?")) {
             ps.setLong(1, userId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                cards.add(rs.getInt("card_id"));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    cards.add(new CardEntity(
+                        rs.getLong("id"),
+                        rs.getInt("card_id"),
+                        rs.getInt("level"),
+                        rs.getInt("exp"),
+                        rs.getInt("skill_level"),
+                        rs.getInt("awaken_level")
+                    ));
+                }
             }
         } catch (SQLException e) {
             log.error("getUserCards failed", e);
