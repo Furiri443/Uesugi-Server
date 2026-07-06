@@ -1,6 +1,6 @@
 package com.emu.tqqserver.console;
 
-import com.emu.tqqserver.service.UserService;
+import com.emu.tqqserver.game.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

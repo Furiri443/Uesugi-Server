@@ -4,7 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import com.emu.tqqserver.db.DatabaseManager;
-import com.emu.tqqserver.service.UserService;
+import com.emu.tqqserver.game.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +30,11 @@ public abstract class BaseRoute {
     protected final UserService userService = new UserService();
 
     /** Get the authenticated user for the current request, or throw an exception if unauthorized. */
-    protected com.emu.tqqserver.model.entity.UserEntity requireUser(FullHttpRequest req) {
+    protected com.emu.tqqserver.game.user.UserEntity requireUser(FullHttpRequest req) {
         String session = getSession(req);
-        Long userId = com.emu.tqqserver.service.SessionService.getUserId(session);
+        Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(session);
         if (userId != null) {
-            com.emu.tqqserver.model.entity.UserEntity user = userService.findById(userId);
+            com.emu.tqqserver.game.user.UserEntity user = userService.findById(userId);
             if (user != null) return user;
         }
         throw new RuntimeException("Unauthorized session: " + session);
@@ -42,13 +42,13 @@ public abstract class BaseRoute {
 
     /** Send an empty Nocontent response (stored_data only, no payload). */
     protected void sendNocontent(ChannelHandlerContext ctx, FullHttpRequest req) {
-        com.emu.tqqserver.model.entity.UserEntity user = requireUser(req);
+        com.emu.tqqserver.game.user.UserEntity user = requireUser(req);
         sendNocontent(ctx, req, user);
     }
 
-    protected void sendNocontent(ChannelHandlerContext ctx, FullHttpRequest req, com.emu.tqqserver.model.entity.UserEntity user) {
+    protected void sendNocontent(ChannelHandlerContext ctx, FullHttpRequest req, com.emu.tqqserver.game.user.UserEntity user) {
         com.emu.tqqserver.proto.pkg_proto.Nocontent nocontent = com.emu.tqqserver.proto.pkg_proto.Nocontent.newBuilder()
-            .setStoredData(new com.emu.tqqserver.service.StoredDataService().build(user))
+            .setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(user))
             .build();
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, nocontent.toByteArray());
     }

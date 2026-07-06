@@ -1,8 +1,8 @@
 package com.emu.tqqserver.handler;
 
-import com.emu.tqqserver.model.entity.UserEntity;
+import com.emu.tqqserver.game.user.UserEntity;
 import com.emu.tqqserver.network.websocket.GameSession;
-import com.emu.tqqserver.service.UserService;
+import com.emu.tqqserver.game.user.UserService;
 import com.emu.tqqserver.annotation.OpCode;
 
 import java.nio.charset.StandardCharsets;
@@ -23,7 +23,7 @@ public class AuthLoginHandler extends BaseHandler {
         // Extract token directly from body
         String token = new String(body, StandardCharsets.UTF_8).trim();
 
-        Long userId = com.emu.tqqserver.service.SessionService.getUserId(token);
+        Long userId = com.emu.tqqserver.game.user.SessionService.getUserId(token);
         if (userId == null) {
             log.warn("AUTH_LOGIN failed: invalid token {}", token);
             session.getChannel().close();

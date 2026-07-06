@@ -6,7 +6,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import com.emu.tqqserver.db.DatabaseManager;
 import com.emu.tqqserver.network.websocket.GameServerInitializer;
-import com.emu.tqqserver.service.MasterDataService;
+import com.emu.tqqserver.game.master.MasterDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +43,8 @@ public class GotopazuServer {
     }
 
     public void start() throws InterruptedException {
+        com.emu.tqqserver.game.GameContext.getInstance().setConfig(this.config);
+
         System.setProperty("gotopazu.resource.list.dir", config.getResourceListDir());
         System.setProperty("gotopazu.cdn.dir", config.getCdnDir());
 
@@ -54,8 +56,8 @@ public class GotopazuServer {
         MasterDataService.getInstance().getAllBytes();
         log.info("Pre-loaded master data in {} ms", System.currentTimeMillis() - startMs);
 
-        com.emu.tqqserver.service.IAPProductService.initialize(config.getResourceListDir());
-        com.emu.tqqserver.service.NoticeService.initialize(config.getResourceListDir());
+        com.emu.tqqserver.game.shop.IAPProductService.initialize(config.getResourceListDir());
+        com.emu.tqqserver.game.notice.NoticeService.initialize(config.getResourceListDir());
 
         com.emu.tqqserver.console.ConsoleCommandManager.startConsoleThread();
 

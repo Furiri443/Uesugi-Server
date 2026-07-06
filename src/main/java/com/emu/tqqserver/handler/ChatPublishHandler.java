@@ -2,7 +2,7 @@ package com.emu.tqqserver.handler;
 
 import com.emu.tqqserver.network.websocket.GameSession;
 import com.emu.tqqserver.proto.pkg_prealtime.ChatPublish;
-import com.emu.tqqserver.service.UserService;
+import com.emu.tqqserver.game.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.emu.tqqserver.annotation.OpCode;
