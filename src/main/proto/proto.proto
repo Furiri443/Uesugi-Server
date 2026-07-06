@@ -832,7 +832,7 @@ message BookManageInfo {
 
 message Collection {
   StoredData stored_data = 1;
-  Collection collection = 2;
+  pkg_puser.Collection collection = 2;
   repeated CollectionPage page_list = 3;
 }
 

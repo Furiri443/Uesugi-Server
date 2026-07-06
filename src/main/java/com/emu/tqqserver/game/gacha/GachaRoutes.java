@@ -57,10 +57,12 @@ public class GachaRoutes extends BaseRoute {
         
         int[] drawnCards = new int[drawCount];
         java.util.Map<Integer, Integer> cardCounts = new java.util.HashMap<>();
-        java.util.Random rand = new java.util.Random();
+        
+        GachaService gachaService = new GachaService();
         for (int i = 0; i < drawCount; i++) {
-            // Pick a random card from valid range (e.g., 10001 - 10020)
-            int cardId = 10001 + rand.nextInt(20);
+            // For 10-pulls (mode == 2), the 10th card (index 9) is the guaranteed bonus pull
+            boolean isBonus = (mode == 2 && i == 9);
+            int cardId = gachaService.drawCard(gachaId, isBonus);
             drawnCards[i] = cardId;
             cardCounts.put(cardId, cardCounts.getOrDefault(cardId, 0) + 1);
         }

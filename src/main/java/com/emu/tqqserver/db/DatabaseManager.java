@@ -80,6 +80,11 @@ public class DatabaseManager {
             stmt.executeUpdate(SQL_CREATE_USER_STAMINA);
             stmt.executeUpdate(SQL_CREATE_GACHA_LOG);
             stmt.executeUpdate(SQL_CREATE_USER_PRESENTS);
+            stmt.executeUpdate(SQL_CREATE_USER_COLLECTIONS);
+            stmt.executeUpdate(SQL_CREATE_USER_COLLECTION_PAGES);
+            stmt.executeUpdate(SQL_CREATE_USER_COLLECTION_ELEMENTS);
+
+            // Create many-to-many lookup tables
             stmt.executeUpdate(SQL_CREATE_USER_COOKING);
             stmt.executeUpdate(SQL_CREATE_USER_FRIENDS);
             stmt.executeUpdate(SQL_CREATE_USER_BLOCKS);
@@ -162,7 +167,8 @@ public class DatabaseManager {
             awaken_level INTEGER NOT NULL DEFAULT 0,
             skill_level  INTEGER NOT NULL DEFAULT 1,
             is_new       INTEGER NOT NULL DEFAULT 1,
-            obtained_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+            obtained_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+            UNIQUE(user_id, card_id)
         )
         """;
 
@@ -242,6 +248,40 @@ public class DatabaseManager {
             card_id    INTEGER NOT NULL,
             rarity     INTEGER NOT NULL,
             pulled_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+        )
+        """;
+
+    // ── Collection (Album) ───────────────────────────────────────────────────
+    private static final String SQL_CREATE_USER_COLLECTIONS = """
+        CREATE TABLE IF NOT EXISTS user_collections (
+            user_id    INTEGER PRIMARY KEY REFERENCES users(user_id),
+            bgm_id     INTEGER NOT NULL DEFAULT 1,
+            view_count INTEGER NOT NULL DEFAULT 0
+        )
+        """;
+
+    private static final String SQL_CREATE_USER_COLLECTION_PAGES = """
+        CREATE TABLE IF NOT EXISTS user_collection_pages (
+            user_id       INTEGER NOT NULL REFERENCES users(user_id),
+            idx           INTEGER NOT NULL,
+            title         TEXT,
+            layout_id     INTEGER NOT NULL DEFAULT 1,
+            theme_id      INTEGER NOT NULL DEFAULT 1,
+            transition_id INTEGER NOT NULL DEFAULT 1,
+            page_sort     INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (user_id, idx)
+        )
+        """;
+
+    private static final String SQL_CREATE_USER_COLLECTION_ELEMENTS = """
+        CREATE TABLE IF NOT EXISTS user_collection_elements (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id       INTEGER NOT NULL REFERENCES users(user_id),
+            page_idx      INTEGER NOT NULL,
+            element_index INTEGER NOT NULL,
+            element_id    INTEGER NOT NULL,
+            element_type  INTEGER NOT NULL,
+            UNIQUE(user_id, page_idx, element_index)
         )
         """;
 

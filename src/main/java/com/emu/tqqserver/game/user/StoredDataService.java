@@ -141,6 +141,20 @@ public class StoredDataService {
                     }
                 }
 
+                // Load all BGMs
+                java.util.List<com.fasterxml.jackson.databind.JsonNode> bgms = com.emu.tqqserver.masterdata.MasterDataLoader.getList("bgm.json");
+                if (bgms != null) {
+                    for (com.fasterxml.jackson.databind.JsonNode node : bgms) {
+                        builder.addBgm(com.emu.tqqserver.proto.pkg_pmaster.Bgm.newBuilder()
+                                .setId(node.path("id").asInt())
+                                .setMediaId(node.path("media_id").asInt())
+                                .setTitle(node.path("title").asText())
+                                .setFilename(node.path("filename").asText())
+                                .setHomeBgm(node.path("home_bgm").asInt(0))
+                                .build());
+                    }
+                }
+
                 java.util.List<Integer> funcTutorialIds = userService.getFuncTutorials(user.getUserId());
                 builder.addAllFuncTutorialIds(funcTutorialIds);
                 builder.setReview(0)
@@ -169,6 +183,17 @@ public class StoredDataService {
                 
                 builder.addAllItem(userService.getItems(user.getUserId()));
 
+                java.util.List<com.fasterxml.jackson.databind.JsonNode> groupPhotos = com.emu.tqqserver.masterdata.MasterDataLoader.getList("group_photo.json");
+                if (groupPhotos != null) {
+                    for (com.fasterxml.jackson.databind.JsonNode node : groupPhotos) {
+                        builder.addGroupPhoto(com.emu.tqqserver.proto.pkg_pmaster.GroupPhoto.newBuilder()
+                                .setId(node.path("id").asInt())
+                                .setDirection(node.path("direction").asInt())
+                                .setName(node.path("name").asText())
+                                .setComment(node.path("comment").asText())
+                                .build());
+                    }
+                }
                 // Populate clear array with only the fields that are actually present
                 StoredData temp = builder.build();
                 temp.getAllFields().keySet().forEach(f -> builder.addClear(f.getName()));
