@@ -1,12 +1,14 @@
 package com.emu.tqqserver.command;
 
 import com.emu.tqqserver.game.user.UserService;
+import com.emu.tqqserver.game.present.PresentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AddPayJewelCommand implements ICommand {
     private static final Logger log = LoggerFactory.getLogger(AddPayJewelCommand.class);
     private final UserService userService = new UserService();
+    private final PresentService presentService = new PresentService();
 
     @Override
     public String getName() {
@@ -44,8 +46,8 @@ public class AddPayJewelCommand implements ICommand {
                 return;
             }
 
-            userService.addPayJewel(targetUserId, amount);
-            log.info("Added {} pay coins to user {}", amount, targetUserId);
+            presentService.addPresent(targetUserId, 5, 0, amount, "Quà từ lệnh /addpaycoin");
+            log.info("Sent {} pay coins to present box of user {}", amount, targetUserId);
         } catch (NumberFormatException e) {
             log.warn("Amount and userId must be numbers. Usage: /addpaycoin <amount> [userId]");
         } catch (Exception e) {

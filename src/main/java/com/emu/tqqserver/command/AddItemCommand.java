@@ -1,12 +1,14 @@
 package com.emu.tqqserver.command;
 
 import com.emu.tqqserver.game.user.UserService;
+import com.emu.tqqserver.game.present.PresentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AddItemCommand implements ICommand {
     private static final Logger log = LoggerFactory.getLogger(AddItemCommand.class);
     private final UserService userService = new UserService();
+    private final PresentService presentService = new PresentService();
 
     @Override
     public String getName() {
@@ -45,8 +47,8 @@ public class AddItemCommand implements ICommand {
                 return;
             }
 
-            userService.addItem(targetUserId, itemId, amount);
-            log.info("Added {} items (id: {}) to user {}", amount, itemId, targetUserId);
+            presentService.addPresent(targetUserId, 4, itemId, amount, "Quà từ lệnh /add_item");
+            log.info("Sent {} items (id: {}) to present box of user {}", amount, itemId, targetUserId);
         } catch (NumberFormatException e) {
             log.warn("itemId, amount and userId must be numbers. Usage: /add_item <itemId> <amount> [userId]");
         } catch (Exception e) {

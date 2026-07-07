@@ -61,10 +61,26 @@ public class PresentRoutes extends BaseRoute {
         UserEntity user = userService.findById(userId);
         if (user == null) throw new RuntimeException("User not found: " + userId);
 
-        List<Long> longIds = readInt64ListField(req, 1);
         List<Integer> ids = new ArrayList<>();
-        for (long id : longIds) {
-            ids.add((int) id);
+        try {
+            String bodyString = getBodyString(req);
+            if (bodyString != null && !bodyString.isEmpty()) {
+                for (String param : bodyString.split("&")) {
+                    String[] pair = param.split("=");
+                    if (pair.length == 2) {
+                        String key = pair[0];
+                        String value = pair[1];
+                        if (key.equals("pids") || key.equals("pids[]")) {
+                            // Can be comma separated too, let's split just in case
+                            for (String v : value.split(",")) {
+                                ids.add(Integer.parseInt(v));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to parse present receive pids", e);
         }
 
         List<Goods> goods = presentService.claimPresents(userId, ids);

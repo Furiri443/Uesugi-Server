@@ -18,7 +18,31 @@ import org.slf4j.LoggerFactory;
 public class ChatRoutes extends BaseRoute {
     private static final Logger log = LoggerFactory.getLogger(ChatRoutes.class);
     @Route("/chat/friends")
-    public void friends(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("chat/friends"); sendNocontent(ctx, req); }
+    public void friends(ChannelHandlerContext ctx, FullHttpRequest req) {
+        log.debug("chat/friends");
+        UserEntity user = requireUser(req);
+
+        com.emu.tqqserver.proto.pkg_proto.ListUser bot = 
+            com.emu.tqqserver.proto.pkg_proto.ListUser.newBuilder()
+                .setUid(999)
+                .setLevel(999)
+                .setName("Server Console")
+                .setComment("Type GM commands here!")
+                .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
+                .setPlayerTitleId(0)
+                .setPlayerTitleTargetId(0)
+                .setLeader(com.emu.tqqserver.proto.pkg_pmaster.Card.newBuilder().setId(1823880390).setMemberId(1).setCostumeId(10651).build())
+                .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
+                .build();
+
+        com.emu.tqqserver.proto.pkg_proto.ChatFriendList response = 
+            com.emu.tqqserver.proto.pkg_proto.ChatFriendList.newBuilder()
+                .setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(user))
+                .addListUsers(bot)
+                .build();
+                
+        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
+    }
     @Route("/chat/groups")
     public void groups(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("chat/groups"); sendNocontent(ctx, req); }
     @Route("/chat/messages")

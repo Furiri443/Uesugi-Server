@@ -383,6 +383,10 @@ message PresentList {
   repeated pkg_pmisc.Present list = 2;
 }
 
+message PresentReceive {
+  repeated int64 ids = 1;
+}
+
 message PresentResult {
   StoredData stored_data = 1;
   int32 request_cnt = 2;

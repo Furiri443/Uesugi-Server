@@ -22,17 +22,10 @@ public class UnitDao extends BaseDao {
                      "INSERT INTO user_units (user_id, idx, unit_name, member1, member2, member3, member4, member5, card1, card2, card3, card4, card5) " +
                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 
-            long[] instanceIds = new long[5];
+            long[] cardIds = new long[5];
             for (int i = 0; i < 5; i++) {
-                int targetCardId = defaultUnitCards.size() > i ? defaultUnitCards.get(i) : (99901 + i);
-                long instanceId = 0;
-                for (CardEntity c : userCards) {
-                    if (c.getCardId() == targetCardId) {
-                        instanceId = c.getId();
-                        break;
-                    }
-                }
-                instanceIds[i] = instanceId;
+                int templateId = i < defaultUnitCards.size() ? defaultUnitCards.get(i) : 0;
+                cardIds[i] = userCards.stream().filter(c -> c.getCardId() == templateId).map(CardEntity::getId).findFirst().orElse(0L);
             }
 
             ps.setLong(1, userId);
@@ -43,11 +36,11 @@ public class UnitDao extends BaseDao {
             ps.setInt(6, 3);
             ps.setInt(7, 4);
             ps.setInt(8, 5);
-            ps.setLong(9, instanceIds[0]);
-            ps.setLong(10, instanceIds[1]);
-            ps.setLong(11, instanceIds[2]);
-            ps.setLong(12, instanceIds[3]);
-            ps.setLong(13, instanceIds[4]);
+            ps.setLong(9, cardIds[0]);
+            ps.setLong(10, cardIds[1]);
+            ps.setLong(11, cardIds[2]);
+            ps.setLong(12, cardIds[3]);
+            ps.setLong(13, cardIds[4]);
 
             ps.executeUpdate();
         } catch (SQLException e) {

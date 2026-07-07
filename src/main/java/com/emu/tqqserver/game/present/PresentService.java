@@ -49,6 +49,23 @@ public class PresentService {
             ps.setString(5, text);
             ps.executeUpdate();
             log.info("Added present to user {}: category={}, targetId={}, quantity={}", userId, category, targetId, quantity);
+
+            // Notify client via badge channel
+            com.emu.tqqserver.network.websocket.GameSession session = com.emu.tqqserver.network.websocket.GameWebSocketHandler.getSessionByUserId(userId);
+            if (session != null) {
+                String channel = "_badge_" + userId;
+                com.emu.tqqserver.proto.pkg_prealtime.ChatMessage msg = com.emu.tqqserver.proto.pkg_prealtime.ChatMessage.newBuilder()
+                        .setId(System.currentTimeMillis())
+                        .setChannel(channel)
+                        .setUid(999)
+                        .setType(1)
+                        .setTag(0)
+                        .setStamp(0)
+                        .setMessage("present_added")
+                        .setPostedAt((int) (System.currentTimeMillis() / 1000))
+                        .build();
+                com.emu.tqqserver.game.chat.ChatService.getInstance().addMessage(channel, msg);
+            }
         } catch (SQLException e) {
             log.error("Failed to add present to user: {}", userId, e);
         }
@@ -122,6 +139,14 @@ public class PresentService {
         } else if (category == 2) {
             // Jewels/Ruby
             String sql = "UPDATE users SET jewel = jewel + ? WHERE user_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, quantity);
+                ps.setLong(2, userId);
+                ps.executeUpdate();
+            }
+        } else if (category == 5) {
+            // Pay Jewels
+            String sql = "UPDATE users SET pay_jewel = pay_jewel + ? WHERE user_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, quantity);
                 ps.setLong(2, userId);

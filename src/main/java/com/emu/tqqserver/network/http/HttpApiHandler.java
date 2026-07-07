@@ -228,8 +228,10 @@ public class HttpApiHandler extends SimpleChannelInboundHandler<FullHttpRequest>
         // Strip query string for routing
         String uri = rawUri.contains("?") ? rawUri.substring(0, rawUri.indexOf('?')) : rawUri;
 
-        // Strip app ID and version prefix (e.g. /aaaaaaaa/v1_43_440/account/authorize -> /account/authorize)
-        if (uri.matches("^/[^/]+/v[0-9_]+/.*")) {
+        // Strip optional app ID and version prefix (e.g. /aaaaaaaa/v1_43_440/account/authorize -> /account/authorize, or /v1_43_440/account/authorize -> /account/authorize)
+        if (uri.matches("^/v[0-9_]+/.*")) {
+            uri = uri.replaceFirst("^/v[0-9_]+", "");
+        } else if (uri.matches("^/[^/]+/v[0-9_]+/.*")) {
             uri = uri.replaceFirst("^/[^/]+/v[0-9_]+", "");
         }
 
@@ -266,6 +268,19 @@ public class HttpApiHandler extends SimpleChannelInboundHandler<FullHttpRequest>
         if (handler != null) {
             log.debug("{} {} ({}B)", request.method(), uri,
                 request.content().readableBytes());
+
+            if (request.method() == HttpMethod.POST) {
+                try {
+                    byte[] body = new byte[request.content().readableBytes()];
+                    request.content().getBytes(request.content().readerIndex(), body);
+                    String rawStr = new String(body, io.netty.util.CharsetUtil.UTF_8);
+                    // Avoid spamming too much if it's very large, but let's print it
+                    log.info("RAW [{}]: {}", uri, rawStr);
+                } catch (Exception e) {
+                    log.warn("Failed to read raw body for logging", e);
+                }
+            }
+
             // Read session token from header
             String session = request.headers().get("X-Enish-App-Session", "");
             handler.handle(ctx, request);

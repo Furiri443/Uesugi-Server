@@ -116,8 +116,19 @@ public class GiveAllCommand implements ICommand {
                     log.info("Successfully gave all clothes to user {}", targetUserId);
                 }
             }
+
+            // Force reload for this user if they are online
+            com.emu.tqqserver.network.websocket.GameSession session = com.emu.tqqserver.network.websocket.GameWebSocketHandler.getSessionByUserId(targetUserId);
+            if (session != null) {
+                com.emu.tqqserver.proto.pkg_prealtime.Error error = com.emu.tqqserver.proto.pkg_prealtime.Error.newBuilder()
+                    .setCode(10401)
+                    .setMsg("Đã add thành công. Đang tải lại dữ liệu...")
+                    .build();
+                session.sendPush(1, error.toByteArray());
+            }
+
         } catch (Exception e) {
-            log.error("Failed to execute give_all command", e);
+            log.error("Failed to execute give_all", e);
         }
     }
 }

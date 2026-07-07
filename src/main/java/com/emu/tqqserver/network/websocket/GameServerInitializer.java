@@ -39,7 +39,7 @@ import com.emu.tqqserver.server.ServerConfig;
 public class GameServerInitializer extends ChannelInitializer<SocketChannel> {
 
     /** WebSocket upgrade path */
-    public static final String WS_PATH = "/aaaaaa";
+    public static final String WS_PATH = "/";
 
     /** Max aggregated HTTP request size — 8MB đủ cho mọi API proto body */
     private static final int MAX_HTTP_CONTENT_LENGTH = 8 * 1024 * 1024;

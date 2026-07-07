@@ -19,6 +19,8 @@ public class CommandManager {
         registerCommand(new AddPayJewelCommand());
         registerCommand(new AddItemCommand());
         registerCommand(new GiveAllCommand());
+        registerCommand(new SetLevelCommand());
+        registerCommand(new GiveCommand());
     }
 
     public static CommandManager getInstance() {
@@ -29,9 +31,9 @@ public class CommandManager {
         commands.put(command.getName().toLowerCase(), command);
     }
 
-    public void executeCommand(long executorId, String commandLine) {
+    public String executeCommand(long executorId, String commandLine) {
         String[] parts = commandLine.trim().split("\\s+");
-        if (parts.length == 0) return;
+        if (parts.length == 0) return "Empty command.";
 
         String cmdName = parts[0].toLowerCase();
         if (cmdName.startsWith("/")) {
@@ -42,11 +44,15 @@ public class CommandManager {
         if (command != null) {
             try {
                 command.execute(executorId, parts);
+                return "Command /" + cmdName + " executed successfully.";
             } catch (Exception e) {
                 log.error("Error executing command: {}", cmdName, e);
+                return "Error: " + e.getMessage();
             }
         } else {
-            log.warn("Unknown command: {}. Available: {}", cmdName, String.join(", ", commands.keySet()));
+            String avail = String.join(", ", commands.keySet());
+            log.warn("Unknown command: {}. Available: {}", cmdName, avail);
+            return "Unknown command. Available: " + avail;
         }
     }
 }

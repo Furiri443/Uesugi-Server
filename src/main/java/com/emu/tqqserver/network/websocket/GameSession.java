@@ -32,36 +32,29 @@ public class GameSession {
      * Build and send a response packet.
      *
      * @param commandId the response command ID
-     * @param sequenceNo the echoed request sequence number
-     * @param body      serialized protobuf body (may be empty)
      */
     public void sendPacket(int commandId, int sequenceNo, byte[] body) {
-        sendPacket(1, sequenceNo, 0, body);
-    }
-
-    /**
-     * Sends a Reply (MessageType = 1) to the client.
-     */
-    public void sendPacket(int messageType, int messageId, int errorCode, byte[] body) {
         // MessageType = 1 (Reply)
-        // messageId = 4 bytes
-        // errorCode = 4 bytes
-        ByteBuffer buf = ByteBuffer.allocate(9 + body.length).order(ByteOrder.LITTLE_ENDIAN);
-        buf.put((byte) messageType);
-        buf.putInt(messageId);
-        buf.putInt(errorCode);
+        // SequenceNo = 4 bytes
+        // CommandId/OpCode = 1 byte
+        ByteBuffer buf = ByteBuffer.allocate(6 + body.length).order(ByteOrder.LITTLE_ENDIAN);
+        buf.put((byte) 1);
+        buf.putInt(sequenceNo);
+        buf.put((byte) commandId);
         buf.put(body);
         send(buf.array());
     }
 
     /**
-     * Sends a Message/Push (MessageType = 0) to the client.
+     * Sends a Message/Push (Server-initiated) to the client.
      */
     public void sendPush(int opCode, byte[] body) {
-        // MessageType = 0 (Message)
-        // opCode = 1 byte (or 4 bytes? Let's use 1 byte to match request)
-        ByteBuffer buf = ByteBuffer.allocate(2 + body.length).order(ByteOrder.LITTLE_ENDIAN);
+        // MessageType = 0 (Push)
+        // SequenceNo = 4 bytes (0 for Push)
+        // OpCode = 1 byte
+        ByteBuffer buf = ByteBuffer.allocate(6 + body.length).order(ByteOrder.LITTLE_ENDIAN);
         buf.put((byte) 0);
+        buf.putInt(0);
         buf.put((byte) opCode);
         buf.put(body);
         send(buf.array());

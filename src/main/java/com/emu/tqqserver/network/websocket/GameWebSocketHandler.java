@@ -96,4 +96,14 @@ public class GameWebSocketHandler extends SimpleChannelInboundHandler<WebSocketF
     public static void broadcast(byte[] packet) {
         sessions.values().forEach(s -> s.send(packet));
     }
+
+    /** Find a session by userId */
+    public static GameSession getSessionByUserId(long userId) {
+        for (GameSession session : sessions.values()) {
+            if (session.getUserId() == userId) {
+                return session;
+            }
+        }
+        return null;
+    }
 }

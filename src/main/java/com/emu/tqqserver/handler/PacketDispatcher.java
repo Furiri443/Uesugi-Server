@@ -28,7 +28,7 @@ public class PacketDispatcher {
 
     private static final Logger log = LoggerFactory.getLogger(PacketDispatcher.class);
 
-    private static final int HEADER_SIZE = 5; // 4 (messageId) + 1 (opCode)
+    private static final int HEADER_SIZE = 5; // 4 (sequenceNo) + 1 (opCode)
 
     private final Map<Integer, CommandHandler> handlers = new HashMap<>();
 
@@ -39,7 +39,10 @@ public class PacketDispatcher {
     private void registerHandlers() {
         Class<?>[] handlerClasses = {
             AuthLoginHandler.class,
-            ChatPublishHandler.class
+            ChatPublishHandler.class,
+            ChatChannelStatHandler.class,
+            ChatChannelListHandler.class,
+            ChatHistoryHandler.class
         };
 
         for (Class<?> clazz : handlerClasses) {
@@ -66,29 +69,29 @@ public class PacketDispatcher {
         }
 
         ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        int messageId = buf.getInt();
+        int sequenceNo = buf.getInt();
         int opCode = buf.get() & 0xFF;
 
-        byte[] body = new byte[data.length - HEADER_SIZE];
+        byte[] body = new byte[data.length - 5];
         buf.get(body);
 
-        log.debug("Received opCode={} msgId={} bodyLen={} userId={}",
-                opCode, messageId, body.length, session.getUserId());
+        log.debug("Received opCode={} seqNo={} bodyLen={} userId={}",
+                opCode, sequenceNo, body.length, session.getUserId());
 
         CommandHandler handler = handlers.get(opCode);
         if (handler != null) {
             try {
-                handler.handle(session, messageId, body);
+                handler.handle(session, sequenceNo, body);
             } catch (Exception e) {
                 log.error("Handler error for opCode={}: {}", opCode, e.getMessage(), e);
                 // Send error reply
-                session.sendPacket(1, messageId, 1, new byte[0]); // MessageType.Reply=1, ErrorCode=1
+                session.sendPacket(opCode, sequenceNo, new byte[0]);
             }
         } else {
-            log.warn("Unknown opCode={} msgId={} bodyLen={} - STUB NEEDED",
-                    opCode, messageId, body.length);
+            log.warn("Unknown opCode={} seqNo={} bodyLen={} - STUB NEEDED",
+                    opCode, sequenceNo, body.length);
             // Echo back empty reply so client doesn't hang
-            session.sendPacket(1, messageId, 0, new byte[0]);
+            session.sendPacket(opCode, sequenceNo, new byte[0]);
         }
     }
 }

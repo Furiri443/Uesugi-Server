@@ -32,9 +32,30 @@ public class FriendRoutes extends BaseRoute {
         long userId = me.getUserId();
 
         List<UserEntity> friends = friendService.getFriends(userId);
-        FriendList response = buildFriendList(me, friends);
+        FriendList.Builder responseBuilder = buildFriendList(me, friends).toBuilder();
 
-        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
+        // Add GM Bot 999 ONLY to the friend list, not request/approval lists
+        ListUser botUser = ListUser.newBuilder()
+            .setUid(999)
+            .setLevel(999)
+            .setName("Server Console")
+            .setComment("Type GM commands here!")
+            .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
+            .setPlayerTitleId(0)
+            .setPlayerTitleTargetId(0)
+            .setLeader(com.emu.tqqserver.proto.pkg_pmaster.Card.newBuilder().setId(1823880390).setMemberId(1).setCostumeId(10651).build())
+            .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
+            .build();
+        
+        RankListUser botRlu = RankListUser.newBuilder()
+            .setUser(botUser)
+            .setRank(1)
+            .setScore(0)
+            .setEpBoostRate(10)
+            .build();
+        responseBuilder.addListUsers(botRlu);
+
+        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, responseBuilder.build().toByteArray());
     }
 
     /** POST /friend/requestlist */
@@ -184,7 +205,6 @@ public class FriendRoutes extends BaseRoute {
                 .build();
             rankList.add(rlu);
         }
-
         FriendEpBoost boost = FriendEpBoost.newBuilder()
             .setFriendCount(members.size())
             .setEpBoost(0)

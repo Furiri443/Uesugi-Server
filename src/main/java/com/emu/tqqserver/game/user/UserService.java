@@ -132,6 +132,10 @@ public class UserService {
         userDao.incrementField(userId, "coin", amount);
     }
 
+    public void setLevel(long userId, int level) {
+        userDao.updateField(userId, "rank", level);
+    }
+
     public boolean deductCurrency(long userId, int coinAmount, int jewelAmount) {
         String sql = "UPDATE users SET coin = coin - ?, jewel = jewel - ? WHERE user_id = ? AND coin >= ? AND jewel >= ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
