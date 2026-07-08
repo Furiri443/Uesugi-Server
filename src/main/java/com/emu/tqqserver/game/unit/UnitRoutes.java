@@ -18,11 +18,15 @@ public class UnitRoutes extends BaseRoute {
         log.debug("unit/set"); 
         UserEntity me = requireUser(req);
         
-        com.fasterxml.jackson.databind.JsonNode json = getJsonBody(req);
-        log.info("unit/set payload: {}", json);
-        if (json != null && json.has("uidx")) {
-            int uidx = json.get("uidx").asInt();
-            int mode = json.has("mode") ? json.get("mode").asInt() : 0;
+        String bodyStr = getBodyString(req);
+        log.info("unit/set RAW body: {}", bodyStr);
+        
+        io.netty.handler.codec.http.QueryStringDecoder decoder = new io.netty.handler.codec.http.QueryStringDecoder("?" + bodyStr);
+        java.util.Map<String, java.util.List<String>> params = decoder.parameters();
+        
+        if (params.containsKey("uidx")) {
+            int uidx = Integer.parseInt(params.get("uidx").get(0));
+            int mode = params.containsKey("mode") ? Integer.parseInt(params.get("mode").get(0)) : 0;
             
             // Synchronize globally to prevent race conditions from concurrent unit/set requests
             synchronized(UnitRoutes.class) {
@@ -41,13 +45,14 @@ public class UnitRoutes extends BaseRoute {
                     String name = existingUnit.getUnitName();
                     
                     if (mode == 1) {
-                        int memberId = json.has("member_id") ? json.get("member_id").asInt() : 0;
-                        long mainCardId = json.has("main_card_id") ? json.get("main_card_id").asLong() : 0L;
-                        
-                        for (int i = 0; i < 5; i++) {
-                            if (members[i] == memberId) {
-                                cards[i] = mainCardId;
-                                break;
+                        java.util.List<String> memberIdsStr = params.get("member_id");
+                        java.util.List<String> mainCardIdsStr = params.get("main_card_id");
+                        if (memberIdsStr != null && mainCardIdsStr != null) {
+                            for (int i = 0; i < Math.min(memberIdsStr.size(), 5); i++) {
+                                members[i] = Integer.parseInt(memberIdsStr.get(i));
+                            }
+                            for (int i = 0; i < Math.min(mainCardIdsStr.size(), 5); i++) {
+                                cards[i] = Long.parseLong(mainCardIdsStr.get(i));
                             }
                         }
                     }

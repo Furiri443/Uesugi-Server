@@ -307,7 +307,8 @@ public class UserDao extends BaseDao {
                         rs.getInt("level"),
                         rs.getInt("exp"),
                         rs.getInt("skill_level"),
-                        rs.getInt("awaken_level")
+                        0, // activeSkillExp
+                        rs.getInt("awaken_level") // wait, limitbreakRank? Awaken level is something else.
                     ));
                 }
             }

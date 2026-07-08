@@ -70,10 +70,10 @@ public class BlockRoutes extends BaseRoute {
     }
 
     private ListUser buildListUser(UserEntity member) {
-        com.emu.tqqserver.proto.pkg_pmaster.Card leader = com.emu.tqqserver.proto.pkg_pmaster.Card.newBuilder()
+        com.emu.tqqserver.proto.pkg_puser.Card leader = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
             .setId(1823880390)
-            .setMemberId((int) member.getUserId())
-            .setCostumeId(10651)
+            .setUid((int) member.getUserId())
+            .setCardId(10651)
             .build();
 
         return ListUser.newBuilder()

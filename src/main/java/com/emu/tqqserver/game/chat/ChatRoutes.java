@@ -31,7 +31,7 @@ public class ChatRoutes extends BaseRoute {
                 .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
                 .setPlayerTitleId(0)
                 .setPlayerTitleTargetId(0)
-                .setLeader(com.emu.tqqserver.proto.pkg_pmaster.Card.newBuilder().setId(1823880390).setMemberId(1).setCostumeId(10651).build())
+                .setLeader(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder().setId(1823880390).setUid(1).setCardId(10651).build())
                 .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
                 .build();
 

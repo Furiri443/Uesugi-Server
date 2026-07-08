@@ -45,10 +45,10 @@ public class PuzzleRoutes extends BaseRoute {
         puzzleService.startPuzzle(userId, stageId);
 
         // Build a mock helper list user to show on screen
-        com.emu.tqqserver.proto.pkg_pmaster.Card leaderCard = com.emu.tqqserver.proto.pkg_pmaster.Card.newBuilder()
+        com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
             .setId(1823880390)
-            .setMemberId(10003)
-            .setCostumeId(10651)
+            .setUid(10003)
+            .setCardId(10651)
             .build();
 
         ListUser helper = ListUser.newBuilder()
@@ -102,11 +102,24 @@ public class PuzzleRoutes extends BaseRoute {
 
         List<Goods> rewards = puzzleService.clearPuzzle(userId, stageId, score, stars);
 
+        com.emu.tqqserver.game.card.CardService cardService = new com.emu.tqqserver.game.card.CardService();
+        List<com.emu.tqqserver.game.user.CardEntity> cards = cardService.getUserCards(userId);
+        
+        List<com.emu.tqqserver.proto.pkg_proto.PuzzleCard> puzzleCards = new java.util.ArrayList<>();
+        for (int i = 0; i < Math.min(5, cards.size()); i++) {
+            com.emu.tqqserver.game.user.CardEntity c = cards.get(i);
+            puzzleCards.add(com.emu.tqqserver.proto.pkg_proto.PuzzleCard.newBuilder()
+                .setCard(cardService.mergeToMasterCard(c))
+                .setBaseExp(50)
+                .build());
+        }
+
         PuzzleResult response = PuzzleResult.newBuilder()
             .setStoredData(storedDataService.build(user))
             .setNewRecord(true)
             .setScore(score)
             .addAllStageClearReward(rewards)
+            .addAllUnit(puzzleCards)
             .build();
             
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
@@ -155,10 +168,10 @@ public class PuzzleRoutes extends BaseRoute {
 
         for (UserEntity u : friends) {
 
-            com.emu.tqqserver.proto.pkg_pmaster.Card leaderCard = com.emu.tqqserver.proto.pkg_pmaster.Card.newBuilder()
+            com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                 .setId(1823880390) // Default card id for now
-                .setMemberId(10003)
-                .setCostumeId(10651)
+                .setUid(10003)
+                .setCardId(10651)
                 .build();
 
             ListUser helper = ListUser.newBuilder()

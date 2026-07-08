@@ -5,22 +5,25 @@ public class CardEntity {
     private int cardId;
     private int level;
     private int exp;
-    private int skillLevel;
-    private int awakenLevel;
+    private int activeSkillLevel;
+    private int activeSkillExp;
+    private int limitbreakRank;
 
-    public CardEntity(long id, int cardId, int level, int exp, int skillLevel, int awakenLevel) {
+    public CardEntity(long id, int cardId, int level, int exp, int activeSkillLevel, int activeSkillExp, int limitbreakRank) {
         this.id = id;
         this.cardId = cardId;
         this.level = level;
         this.exp = exp;
-        this.skillLevel = skillLevel;
-        this.awakenLevel = awakenLevel;
+        this.activeSkillLevel = activeSkillLevel;
+        this.activeSkillExp = activeSkillExp;
+        this.limitbreakRank = limitbreakRank;
     }
 
     public long getId() { return id; }
     public int getCardId() { return cardId; }
     public int getLevel() { return level; }
     public int getExp() { return exp; }
-    public int getSkillLevel() { return skillLevel; }
-    public int getAwakenLevel() { return awakenLevel; }
+    public int getActiveSkillLevel() { return activeSkillLevel; }
+    public int getActiveSkillExp() { return activeSkillExp; }
+    public int getLimitbreakRank() { return limitbreakRank; }
 }

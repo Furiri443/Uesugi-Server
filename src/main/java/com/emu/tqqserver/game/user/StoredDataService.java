@@ -62,6 +62,42 @@ public class StoredDataService {
                                 .setLastResetDate((int) (System.currentTimeMillis() / 1000))
                                 .build();
 
+                // Find active unit (Unit 1)
+                com.emu.tqqserver.proto.pkg_puser.Unit activeUnit = null;
+                for (com.emu.tqqserver.proto.pkg_puser.Unit u : units) {
+                        if (u.getIdx() == 1) {
+                                activeUnit = u;
+                                break;
+                        }
+                }
+
+                // Default leader card
+                long mainCardId = 1823880390L;
+                if (activeUnit != null && activeUnit.getCardId1() > 0) {
+                        mainCardId = activeUnit.getCardId1();
+                }
+
+                com.emu.tqqserver.game.card.CardService cardService = new com.emu.tqqserver.game.card.CardService();
+                com.emu.tqqserver.proto.pkg_puser.Card leaderCard;
+                com.emu.tqqserver.game.user.CardEntity leaderCardEntity = cardService.getUserCardsMap(user.getUserId()).get(mainCardId);
+                if (leaderCardEntity != null) {
+                        leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                            .setId(leaderCardEntity.getId())
+                            .setCardId(leaderCardEntity.getCardId())
+                            .setLevel(leaderCardEntity.getLevel())
+                            .setExp(leaderCardEntity.getExp())
+                            .setLimitbreakRank(leaderCardEntity.getLimitbreakRank())
+                            .build();
+                } else {
+                        leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder().setId(mainCardId).build();
+                }
+
+                com.emu.tqqserver.proto.pkg_pmisc.FeatureTeamMember featureTeamMember = com.emu.tqqserver.proto.pkg_pmisc.FeatureTeamMember.newBuilder()
+                        .setUid((int) user.getUserId())
+                        .setFeatureId(55)
+                        .setTeamId(1)
+                        .build();
+
                 com.emu.tqqserver.proto.pkg_puser.Mileage mileage = com.emu.tqqserver.proto.pkg_puser.Mileage
                                 .newBuilder()
                                 .setUid((int) user.getUserId())
@@ -102,6 +138,8 @@ public class StoredDataService {
                                 .addStage(stageBuilder.build())
                                 .setWork(work)
                                 .setMileage(mileage)
+                                .setFeatureTeamMember(featureTeamMember)
+                                .putFeatureTeamCreate(55, 1)
                                 .setOptions(options);
                                 
                 UserService userService = new UserService();
@@ -173,12 +211,12 @@ public class StoredDataService {
                             .setInterludeVoice3(1)
                             .setInterludeVoice4(1)
                             .setInterludeVoice5(1)
-                            .setLevelAwake(card.getAwakenLevel())
-                            .setActiveSkillLevel(Math.max(1, card.getSkillLevel()))
-                            .setPassiveSkillLevel1(Math.max(1, card.getSkillLevel()))
-                            .setPassiveSkillLevel2(Math.max(1, card.getSkillLevel()))
-                            .setPassiveSkillLevel3(Math.max(1, card.getSkillLevel()))
-                            .setLimitbreakRank(0)
+                            .setLevelAwake(0)
+                            .setActiveSkillLevel(Math.max(1, card.getActiveSkillLevel()))
+                            .setPassiveSkillLevel1(Math.max(1, card.getActiveSkillLevel()))
+                            .setPassiveSkillLevel2(Math.max(1, card.getActiveSkillLevel()))
+                            .setPassiveSkillLevel3(Math.max(1, card.getActiveSkillLevel()))
+                            .setLimitbreakRank(card.getLimitbreakRank())
                             .setAwakePriority(0)
                             .build());
                     builder.addBook(com.emu.tqqserver.proto.pkg_puser.Book.newBuilder()

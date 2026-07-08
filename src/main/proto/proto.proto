@@ -119,7 +119,7 @@ message StoredData {
   int32 friend_can_greeting_count = 97;
   BondsSeasonRanking last_bonds_season_ranking = 98;
   repeated int32 chat_unread_categories = 99 [packed=true];
-  FeatureTeamMember feature_team_member = 100;
+  pkg_pmisc.FeatureTeamMember feature_team_member = 100;
   repeated pkg_pmaster.PhotoStamp photo_stamp = 101;
   map<int32, int32> feature_team_create = 102;
   repeated pkg_pmaster.ShopChallenge shop_challenge = 103;
@@ -196,7 +196,7 @@ message ListUser {
   int32 player_title_id = 6;
   int32 player_title_target_id = 7;
   int32 block = 8;
-  pkg_pmaster.Card leader = 9;
+  pkg_puser.Card leader = 9;
   pkg_puser.Greeting greeting = 12;
   string friend = 13;
   int32 is_sender = 14;
@@ -653,7 +653,7 @@ message FeatureTeam {
 
 message FeatureTeamMember {
   ListUser user = 1;
-  FeatureTeamMember member = 2;
+  pkg_pmisc.FeatureTeamMember member = 2;
   int32 ep_boost_rate = 3;
 }
 
@@ -855,7 +855,7 @@ message CollectionElement {
   int32 idx = 1;
   int32 type = 2;
   int64 id = 3;
-  pkg_pmaster.Card card = 4;
+  pkg_puser.Card card = 4;
   pkg_pmaster.GroupPhoto group_photo = 7;
 }
 
