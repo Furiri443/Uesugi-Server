@@ -278,19 +278,63 @@ public class UserDao extends BaseDao {
         }
     }
 
-    public void ensureDefaultCards(long userId, int[] defaultCards) {
+    public void ensureDefaultCards(long userId, int[] cardIds) {
         try (Connection conn = DatabaseManager.getInstance().getConnection()) {
-            for (int cardId : defaultCards) {
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT OR IGNORE INTO user_cards (user_id, card_id, level, exp, awaken_level, skill_level, is_new) " +
-                                "VALUES (?, ?, 1, 0, 0, 1, 0)")) {
+            String sql = "INSERT OR IGNORE INTO user_cards (user_id, card_id, level, exp, awaken_level, skill_level, is_new) VALUES (?, ?, 1, ?, 0, 1, 0)";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (int cardId : cardIds) {
+                    int exp = 1; // Default fallback
+                    com.emu.tqqserver.data.resources.CardDef cardDef = com.emu.tqqserver.data.GameData.getCardDataTable().get(cardId);
+                    if (cardDef != null) {
+                        int levelGrowthId = cardDef.getLevelGrowthId();
+                        for (com.emu.tqqserver.data.resources.LevelGrowthDef growth : com.emu.tqqserver.data.GameData.getLevelGrowthDataTable().values()) {
+                            if (growth.getId() == levelGrowthId && growth.getLevel() == 1) {
+                                exp = growth.getValue() + 1;
+                                break;
+                            }
+                        }
+                    }
                     ps.setLong(1, userId);
                     ps.setInt(2, cardId);
-                    ps.executeUpdate();
+                    ps.setInt(3, exp);
+                    ps.addBatch();
                 }
+                ps.executeBatch();
+            } catch (SQLException e) {
+                log.error("ensureDefaultCards failed during batch execution", e);
             }
         } catch (SQLException e) {
             log.error("ensureDefaultCards failed", e);
+        }
+    }
+
+    public void updateCardExpAndLevel(long cardId, int newExp, int newLevel) {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement("UPDATE user_cards SET exp = ?, level = ? WHERE id = ?")) {
+            ps.setInt(1, newExp);
+            ps.setInt(2, newLevel);
+            ps.setLong(3, cardId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("updateCardExpAndLevel failed", e);
+        }
+    }
+
+    public void deleteCards(List<Long> cardIds) {
+        if (cardIds.isEmpty()) return;
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < cardIds.size(); i++) {
+            placeholders.append("?");
+            if (i < cardIds.size() - 1) placeholders.append(",");
+        }
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement("DELETE FROM user_cards WHERE id IN (" + placeholders + ")")) {
+            for (int i = 0; i < cardIds.size(); i++) {
+                ps.setLong(i + 1, cardIds.get(i));
+            }
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("deleteCards failed", e);
         }
     }
 
