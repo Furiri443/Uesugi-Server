@@ -38,10 +38,10 @@ public class TutorialRoutes extends BaseRoute {
         if (me != null) {
             String title = getJsonBody(req).path("title").asText("");
             if (!title.isEmpty()) {
-                java.util.List<com.fasterxml.jackson.databind.JsonNode> funcTutorials = com.emu.tqqserver.masterdata.MasterDataLoader.getList("func_tutorial.json");
-                for (com.fasterxml.jackson.databind.JsonNode node : funcTutorials) {
-                    if (title.equals(node.path("title").asText())) {
-                        int id = node.path("id").asInt();
+                java.util.Collection<com.emu.tqqserver.data.resources.FuncTutorialDef> funcTutorials = com.emu.tqqserver.data.GameData.getFuncTutorialDataTable().values();
+                for (com.emu.tqqserver.data.resources.FuncTutorialDef def : funcTutorials) {
+                    if (title.equals(def.getTitle())) {
+                        int id = def.getId();
                         userService.addFuncTutorial(me.getUserId(), id);
                         log.info("Saved func tutorial {} ({}) for user {}", title, id, me.getUserId());
                         break;

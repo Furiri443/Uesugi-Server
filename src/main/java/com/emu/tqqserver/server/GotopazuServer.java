@@ -47,7 +47,13 @@ public class GotopazuServer {
 
         System.setProperty("gotopazu.resource.list.dir", config.getResourceListDir());
         System.setProperty("gotopazu.cdn.dir", config.getCdnDir());
+        log.info("Loaded server configuration.");
 
+        // Load puzzle stage data
+        com.emu.tqqserver.data.ResourceLoader.setResourceDir("gotopazu");
+        com.emu.tqqserver.data.ResourceLoader.loadAll();
+
+        // 2. Initialize Database
         DatabaseManager.getInstance().initialize(config.getDbPath());
         MasterDataService.initialize(config.getResourceListDir());
         

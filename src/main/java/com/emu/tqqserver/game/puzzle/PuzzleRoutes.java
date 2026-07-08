@@ -33,22 +33,13 @@ public class PuzzleRoutes extends BaseRoute {
         UserEntity user = userService.findById(userId);
         if (user == null) throw new RuntimeException("User not found: " + userId);
 
-        byte[] body = getBody(req);
-        String bodyStr = new String(body, java.nio.charset.StandardCharsets.UTF_8);
-        log.info("PUZZLE START BODY: {}", bodyStr);
-
+        com.fasterxml.jackson.databind.JsonNode reqBody = getJsonBody(req);
+        
         int stageId = 1001; // default fallback stage
-        if (bodyStr.contains("stage_id=")) {
-            try {
-                String[] parts = bodyStr.split("&");
-                for (String part : parts) {
-                    if (part.startsWith("stage_id=")) {
-                        stageId = Integer.parseInt(part.substring(9));
-                    }
-                }
-            } catch (Exception e) {
-                // ignore
-            }
+        if (reqBody.has("stage_id")) {
+            stageId = reqBody.get("stage_id").asInt(1001);
+        } else if (reqBody.has("stage_id[]")) { // sometimes arrays are passed in form-url-encoded
+            stageId = reqBody.get("stage_id[]").asInt(1001);
         }
 
         puzzleService.startPuzzle(userId, stageId);
@@ -89,13 +80,16 @@ public class PuzzleRoutes extends BaseRoute {
         UserEntity user = userService.findById(userId);
         if (user == null) throw new RuntimeException("User not found: " + userId);
 
-        String uniqId = readStringField(req, 1);
-        int score = readIntField(req, 2);
-        int clearType = readIntField(req, 3);
+        com.fasterxml.jackson.databind.JsonNode reqBody = getJsonBody(req);
+        String uniqId = reqBody.has("uniqId") ? reqBody.get("uniqId").asText() : reqBody.path("uniq_id").asText("");
+        int score = reqBody.has("score") ? reqBody.get("score").asInt() : 0;
+        int clearType = reqBody.has("clearType") ? reqBody.get("clearType").asInt() : reqBody.path("clear_type").asInt(3);
         int stars = clearType > 0 ? clearType : 3;
 
         int stageId = 1001;
-        if (uniqId != null && !uniqId.isEmpty()) {
+        if (reqBody.has("stage_id")) {
+            stageId = reqBody.get("stage_id").asInt(1001);
+        } else if (uniqId != null && !uniqId.isEmpty()) {
             try {
                 String digits = uniqId.replaceAll("\\D+", "");
                 if (!digits.isEmpty()) {

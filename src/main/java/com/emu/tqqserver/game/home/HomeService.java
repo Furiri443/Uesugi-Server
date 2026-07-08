@@ -41,8 +41,6 @@ public class HomeService {
                             .setModelKindId(rs.getInt("model_kind_id"))
                             .setClothesId(rs.getInt("clothes_id"))
                             .setPosition(rs.getInt("position"))
-                            .setBodyTapReaction(1)
-                            .setFaceTapReaction(1)
                             .build();
                     actors.add(actor);
                 }
@@ -61,8 +59,6 @@ public class HomeService {
                         .setModelKindId(1)
                         .setClothesId(defaultClothes[i])
                         .setPosition(i - 1)
-                        .setBodyTapReaction(1)
-                        .setFaceTapReaction(1)
                         .build());
             }
         }

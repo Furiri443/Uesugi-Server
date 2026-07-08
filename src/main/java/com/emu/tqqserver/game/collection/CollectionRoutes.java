@@ -27,15 +27,15 @@ public class CollectionRoutes extends BaseRoute {
         
         if (pages.isEmpty()) {
             // Load default layouts from master data
-            java.util.List<com.fasterxml.jackson.databind.JsonNode> layouts = com.emu.tqqserver.masterdata.MasterDataLoader.getList("collection_layout.json");
+            java.util.Collection<com.emu.tqqserver.data.resources.CollectionLayoutDef> layouts = com.emu.tqqserver.data.GameData.getCollectionLayoutDataTable().values();
             int idx = 1;
-            for (com.fasterxml.jackson.databind.JsonNode layout : layouts) {
-                if (layout.has("is_default") && layout.get("is_default").asInt() == 1) {
+            for (com.emu.tqqserver.data.resources.CollectionLayoutDef layout : layouts) {
+                if (layout.getIsDefault() == 1) {
                     pages.add(com.emu.tqqserver.proto.pkg_proto.CollectionPage.newBuilder()
                         .setUid((int)me.getUserId())
                         .setIdx(idx++)
-                        .setTitle(layout.get("name").asText())
-                        .setLayoutId(layout.get("id").asInt())
+                        .setTitle(layout.getName())
+                        .setLayoutId(layout.getId())
                         .setThemeId(1)
                         .setPageSort(idx - 1)
                         .setTransitionId(1)

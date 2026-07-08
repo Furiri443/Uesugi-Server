@@ -1,7 +1,7 @@
 package com.emu.tqqserver.game.master;
 
 import com.emu.tqqserver.proto.pkg_pmaster.All;
-import com.emu.tqqserver.service.loader.MasterDataLoader;
+import com.emu.tqqserver.data.ResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,20 +10,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Caches and serves Master Data for the game.
- * Delegates the actual loading from disk to MasterDataLoader.
+ * Delegates the actual loading from disk to ResourceLoader.
  */
 public class MasterDataService {
 
     private static final Logger log = LoggerFactory.getLogger(MasterDataService.class);
     private static volatile MasterDataService instance;
 
-    private final MasterDataLoader masterDataLoader;
     private final AtomicReference<All> cachedAll = new AtomicReference<>();
     private final AtomicReference<byte[]> cachedAllBytes = new AtomicReference<>();
 
     private MasterDataService(String resourceListDir) {
-        String masterDir = resourceListDir + File.separator + "master";
-        this.masterDataLoader = new MasterDataLoader(masterDir);
+        // ResourceLoader handles directory logic directly
     }
 
     /** Khởi tạo singleton — gọi một lần lúc server start. */
@@ -44,7 +42,7 @@ public class MasterDataService {
         if (existing != null) {
             return existing;
         }
-        All built = masterDataLoader.load();
+        All built = ResourceLoader.getMasterDataAll();
         if (built == null) {
             built = All.getDefaultInstance();
         }

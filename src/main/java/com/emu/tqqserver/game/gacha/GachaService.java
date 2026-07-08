@@ -1,6 +1,6 @@
 package com.emu.tqqserver.game.gacha;
 
-import com.emu.tqqserver.masterdata.MasterDataLoader;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,29 +16,23 @@ public class GachaService {
     public int drawCard(int gachaId, boolean isBonus) {
         try {
             // 1. Get gacha details
-            List<JsonNode> gachas = MasterDataLoader.getList("gacha.json");
-            if (gachas == null) return fallbackDraw();
+            java.util.Collection<com.emu.tqqserver.data.resources.GachaDef> gachas = com.emu.tqqserver.data.GameData.getGachaDataTable().values();
+            if (gachas.isEmpty()) return fallbackDraw();
             
-            JsonNode gacha = null;
-            for (JsonNode g : gachas) {
-                if (g.path("id").asInt() == gachaId) {
-                    gacha = g;
-                    break;
-                }
-            }
+            com.emu.tqqserver.data.resources.GachaDef gacha = com.emu.tqqserver.data.GameData.getGachaDataTable().get(gachaId);
             if (gacha == null) return fallbackDraw();
             
-            int lineupId = gacha.path("lineup_id").asInt();
+            int lineupId = gacha.getLineupId();
 
             // 2. Select group
-            List<JsonNode> groupWeights = MasterDataLoader.getList("gacha_group_weight.json");
-            if (groupWeights == null) return fallbackDraw();
+            java.util.Collection<com.emu.tqqserver.data.resources.GachaGroupWeightDef> groupWeights = com.emu.tqqserver.data.GameData.getGachaGroupWeightDataTable().values();
+            if (groupWeights.isEmpty()) return fallbackDraw();
             
-            List<JsonNode> validGroups = new ArrayList<>();
+            List<com.emu.tqqserver.data.resources.GachaGroupWeightDef> validGroups = new ArrayList<>();
             int totalGroupWeight = 0;
-            for (JsonNode gw : groupWeights) {
-                if (gw.path("gacha_id").asInt() == gachaId) {
-                    int weight = isBonus ? gw.path("bonus_weight").asInt(0) : gw.path("weight").asInt(0);
+            for (com.emu.tqqserver.data.resources.GachaGroupWeightDef gw : groupWeights) {
+                if (gw.getGachaId() == gachaId) {
+                    int weight = isBonus ? gw.getBonusWeight() : gw.getWeight();
                     if (weight > 0) {
                         validGroups.add(gw);
                         totalGroupWeight += weight;
@@ -52,10 +46,10 @@ public class GachaService {
             int currentGroupWeight = 0;
             int selectedGroupId = -1;
             
-            for (JsonNode gw : validGroups) {
-                currentGroupWeight += isBonus ? gw.path("bonus_weight").asInt(0) : gw.path("weight").asInt(0);
+            for (com.emu.tqqserver.data.resources.GachaGroupWeightDef gw : validGroups) {
+                currentGroupWeight += isBonus ? gw.getBonusWeight() : gw.getWeight();
                 if (rGroup <= currentGroupWeight) {
-                    selectedGroupId = gw.path("group_id").asInt();
+                    selectedGroupId = gw.getGroupId();
                     break;
                 }
             }
@@ -63,14 +57,14 @@ public class GachaService {
             if (selectedGroupId == -1) return fallbackDraw();
 
             // 3. Select card from lineup
-            List<JsonNode> lineups = MasterDataLoader.getList("gacha_lineup.json");
-            if (lineups == null) return fallbackDraw();
+            java.util.Collection<com.emu.tqqserver.data.resources.GachaLineupDef> lineups = com.emu.tqqserver.data.GameData.getGachaLineupDataTable().values();
+            if (lineups.isEmpty()) return fallbackDraw();
             
-            List<JsonNode> validLineups = new ArrayList<>();
+            List<com.emu.tqqserver.data.resources.GachaLineupDef> validLineups = new ArrayList<>();
             int totalLineupWeight = 0;
-            for (JsonNode lu : lineups) {
-                if (lu.path("lineup_id").asInt() == lineupId && lu.path("group_id").asInt() == selectedGroupId) {
-                    int weight = isBonus ? lu.path("bonus_weight").asInt(0) : lu.path("weight").asInt(0);
+            for (com.emu.tqqserver.data.resources.GachaLineupDef lu : lineups) {
+                if (lu.getLineupId() == lineupId && lu.getGroupId() == selectedGroupId) {
+                    int weight = isBonus ? lu.getBonusWeight() : lu.getWeight();
                     if (weight > 0) {
                         validLineups.add(lu);
                         totalLineupWeight += weight;
@@ -82,10 +76,10 @@ public class GachaService {
             
             int rCard = rand.nextInt(totalLineupWeight) + 1;
             int currentLineupWeight = 0;
-            for (JsonNode lu : validLineups) {
-                currentLineupWeight += isBonus ? lu.path("bonus_weight").asInt(0) : lu.path("weight").asInt(0);
+            for (com.emu.tqqserver.data.resources.GachaLineupDef lu : validLineups) {
+                currentLineupWeight += isBonus ? lu.getBonusWeight() : lu.getWeight();
                 if (rCard <= currentLineupWeight) {
-                    return lu.path("card_id").asInt();
+                    return lu.getCardId();
                 }
             }
 

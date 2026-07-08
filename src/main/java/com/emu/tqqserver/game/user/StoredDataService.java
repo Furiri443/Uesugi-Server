@@ -37,9 +37,9 @@ public class StoredDataService {
                                 .setUid((int) user.getUserId())
                                 .setStatus(1);
                                 
-                java.util.List<com.fasterxml.jackson.databind.JsonNode> chapters = com.emu.tqqserver.masterdata.MasterDataLoader.getList("chapter.json");
+                java.util.Collection<com.emu.tqqserver.data.resources.ChapterDef> chapters = com.emu.tqqserver.data.GameData.getChapterDataTable().values();
                 if (!chapters.isEmpty()) {
-                        chapterBuilder.setChapterId(chapters.get(0).get("id").asInt());
+                        chapterBuilder.setChapterId(chapters.iterator().next().getId());
                 } else {
                         chapterBuilder.setChapterId(1);
                 }
@@ -48,9 +48,9 @@ public class StoredDataService {
                                 .setUid((int) user.getUserId())
                                 .setRank(3);
                                 
-                java.util.List<com.fasterxml.jackson.databind.JsonNode> stages = com.emu.tqqserver.masterdata.MasterDataLoader.getList("stage.json");
+                java.util.Collection<com.emu.tqqserver.data.resources.StageDef> stages = com.emu.tqqserver.data.GameData.getStageDataTable().values();
                 if (!stages.isEmpty()) {
-                        stageBuilder.setStageId(stages.get(0).get("id").asInt());
+                        stageBuilder.setStageId(stages.iterator().next().getId());
                 } else {
                         stageBuilder.setStageId(1);
                 }
@@ -121,38 +121,31 @@ public class StoredDataService {
                 }
 
                 java.util.List<Integer> clothesIds = userService.getClothes(user.getUserId());
-                java.util.List<com.fasterxml.jackson.databind.JsonNode> masterClothes = com.emu.tqqserver.masterdata.MasterDataLoader.getList("home_member_clothes.json");
-                java.util.Map<Integer, com.fasterxml.jackson.databind.JsonNode> clothesMap = new java.util.HashMap<>();
-                for (com.fasterxml.jackson.databind.JsonNode node : masterClothes) {
-                    clothesMap.put(node.path("id").asInt(), node);
-                }
-                for (int clothesId : clothesIds) {
-                    com.fasterxml.jackson.databind.JsonNode node = clothesMap.get(clothesId);
-                    if (node != null) {
+                java.util.Collection<com.emu.tqqserver.data.resources.HomeMemberClothesDef> masterClothes = com.emu.tqqserver.data.GameData.getHomeMemberClothesDataTable().values();
+                for (com.emu.tqqserver.data.resources.HomeMemberClothesDef def : masterClothes) {
+                    if (clothesIds.contains(def.getId())) {
                         builder.addHomeMemberClothes(com.emu.tqqserver.proto.pkg_pmaster.HomeMemberClothes.newBuilder()
-                                .setId(clothesId)
-                                .setMemberId(node.path("member_id").asInt())
-                                .setCardId(node.path("card_id").asInt())
-                                .setName(node.path("name").asText())
-                                .setType(node.path("type").asInt())
-                                .setThumbnailResourceId(node.path("thumbnail_resource_id").asInt())
-                                .setIsDefault(node.path("is_default").asInt())
+                                .setId(def.getId())
+                                .setMemberId(def.getMemberId())
+                                .setCardId(def.getCardId())
+                                .setName(def.getName())
+                                .setType(def.getType())
+                                .setThumbnailResourceId(def.getThumbnailResourceId())
+                                .setIsDefault(def.getIsDefault())
                                 .build());
                     }
                 }
 
                 // Load all BGMs
-                java.util.List<com.fasterxml.jackson.databind.JsonNode> bgms = com.emu.tqqserver.masterdata.MasterDataLoader.getList("bgm.json");
-                if (bgms != null) {
-                    for (com.fasterxml.jackson.databind.JsonNode node : bgms) {
-                        builder.addBgm(com.emu.tqqserver.proto.pkg_pmaster.Bgm.newBuilder()
-                                .setId(node.path("id").asInt())
-                                .setMediaId(node.path("media_id").asInt())
-                                .setTitle(node.path("title").asText())
-                                .setFilename(node.path("filename").asText())
-                                .setHomeBgm(node.path("home_bgm").asInt(0))
-                                .build());
-                    }
+                java.util.Collection<com.emu.tqqserver.data.resources.BgmDef> bgms = com.emu.tqqserver.data.GameData.getBgmDataTable().values();
+                for (com.emu.tqqserver.data.resources.BgmDef def : bgms) {
+                    builder.addBgm(com.emu.tqqserver.proto.pkg_pmaster.Bgm.newBuilder()
+                            .setId(def.getId())
+                            .setMediaId(def.getMediaId())
+                            .setTitle(def.getTitle())
+                            .setFilename(def.getFilename())
+                            .setHomeBgm(0)
+                            .build());
                 }
 
                 java.util.List<Integer> funcTutorialIds = userService.getFuncTutorials(user.getUserId());
@@ -197,16 +190,14 @@ public class StoredDataService {
                 
                 builder.addAllItem(userService.getItems(user.getUserId()));
 
-                java.util.List<com.fasterxml.jackson.databind.JsonNode> groupPhotos = com.emu.tqqserver.masterdata.MasterDataLoader.getList("group_photo.json");
-                if (groupPhotos != null) {
-                    for (com.fasterxml.jackson.databind.JsonNode node : groupPhotos) {
-                        builder.addGroupPhoto(com.emu.tqqserver.proto.pkg_pmaster.GroupPhoto.newBuilder()
-                                .setId(node.path("id").asInt())
-                                .setDirection(node.path("direction").asInt())
-                                .setName(node.path("name").asText())
-                                .setComment(node.path("comment").asText())
-                                .build());
-                    }
+                java.util.Collection<com.emu.tqqserver.data.resources.GroupPhotoDef> groupPhotos = com.emu.tqqserver.data.GameData.getGroupPhotoDataTable().values();
+                for (com.emu.tqqserver.data.resources.GroupPhotoDef def : groupPhotos) {
+                    builder.addGroupPhoto(com.emu.tqqserver.proto.pkg_pmaster.GroupPhoto.newBuilder()
+                            .setId(def.getId())
+                            .setDirection(def.getDirection())
+                            .setName(def.getName())
+                            .setComment(def.getComment())
+                            .build());
                 }
                 // Populate clear array with only the fields that are actually present
                 StoredData temp = builder.build();

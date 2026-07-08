@@ -38,24 +38,54 @@ public class PuzzleService {
         }
     }
 
-    public List<Goods> clearPuzzle(long userId, int stageId, int score, int stars) {
+    public List<Goods> clearPuzzle(long userId, int stageId, int score, int clearType) {
         List<Goods> rewards = new ArrayList<>();
+
+        // Determine rank and stars based on master data
+        int stars = 1;
+        int coinReward = 100;
+        int expReward = 10;
+        int jewelReward = 0;
+
+        com.emu.tqqserver.data.resources.StageDef stageInfo = com.emu.tqqserver.data.GameData.getStageDataTable().get(stageId);
+        if (stageInfo != null) {
+            if (score >= stageInfo.getRankScoreS()) {
+                stars = 3; coinReward = 500; expReward = 30; jewelReward = 5;
+            } else if (score >= stageInfo.getRankScoreA()) {
+                stars = 2; coinReward = 400; expReward = 25; jewelReward = 3;
+            } else if (score >= stageInfo.getRankScoreB()) {
+                stars = 1; coinReward = 300; expReward = 20; jewelReward = 1;
+            } else if (score >= stageInfo.getRankScoreC()) {
+                stars = 1; coinReward = 200; expReward = 15;
+            } else {
+                stars = 1; coinReward = 100; expReward = 10;
+            }
+        }
+
+        // If clearType > 0, it might override stars from client
+        if (clearType > 0) {
+            stars = clearType;
+        }
 
         // 1. Record stage clear progress
         recordStageClear(userId, stageId, score, stars);
 
-        // 2. Add rewards (e.g. 500 coins and 20 exp)
-        userService.addCoin(userId, 500);
-        rewards.add(Goods.newBuilder().setCategory(1).setTargetId(0).setQuantity(500).build());
+        // 2. Add rewards
+        if (coinReward > 0) {
+            userService.addCoin(userId, coinReward);
+            rewards.add(Goods.newBuilder().setCategory(1).setTargetId(0).setQuantity(coinReward).build());
+        }
 
-        // Add 5 jewels as drop reward
-        userService.addJewel(userId, 5);
-        rewards.add(Goods.newBuilder().setCategory(2).setTargetId(0).setQuantity(5).build());
+        if (jewelReward > 0) {
+            userService.addJewel(userId, jewelReward);
+            rewards.add(Goods.newBuilder().setCategory(2).setTargetId(0).setQuantity(jewelReward).build());
+        }
 
-        // Add 25 Exp to player and check rank up
-        addPlayerExp(userId, 25);
+        if (expReward > 0) {
+            addPlayerExp(userId, expReward);
+        }
 
-        log.info("User {} cleared stage {} with score {}. Awarded 500 coins, 5 jewels, 25 exp.", userId, stageId, score);
+        log.info("User {} cleared stage {} with score {}. Awarded {} coins, {} jewels, {} exp.", userId, stageId, score, coinReward, jewelReward, expReward);
         return rewards;
     }
 
