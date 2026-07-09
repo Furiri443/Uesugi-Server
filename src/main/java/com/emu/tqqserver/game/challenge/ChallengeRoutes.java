@@ -16,7 +16,19 @@ public class ChallengeRoutes extends BaseRoute {
     @Route("/challenge/newrank")
     public void newRank(ChannelHandlerContext ctx, FullHttpRequest req) { log.info("challenge/newrank"); sendNocontent(ctx, req); }
     @Route("/challenge/clearbeginner")
-    public void clearBeginner(ChannelHandlerContext ctx, FullHttpRequest req) { log.info("challenge/clearbeginner"); sendNocontent(ctx, req); }
+    public void clearBeginner(ChannelHandlerContext ctx, FullHttpRequest req) { 
+        log.info("challenge/clearbeginner"); 
+        com.emu.tqqserver.game.user.UserEntity me = requireUser(req);
+        if (me == null) {
+            sendNocontent(ctx, req);
+            return;
+        }
+        com.emu.tqqserver.proto.pkg_proto.ChallengeReceiveResult.Builder builder = com.emu.tqqserver.proto.pkg_proto.ChallengeReceiveResult.newBuilder();
+        com.emu.tqqserver.game.user.UserService userService = new com.emu.tqqserver.game.user.UserService();
+        me = userService.findById(me.getUserId());
+        builder.setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(me));
+        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, builder.build().toByteArray());
+    }
     @Route("/challenge/forcecleargroup")
     public void forceClearGroup(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("challenge/forcecleargroup"); sendNocontent(ctx, req); }
 }

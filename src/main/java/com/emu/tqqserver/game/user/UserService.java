@@ -136,6 +136,22 @@ public class UserService {
         userDao.updateField(userId, "rank", level);
     }
 
+    public void unlockChapter(long userId, int chapterId) {
+        userDao.unlockChapter(userId, chapterId);
+    }
+
+    public java.util.List<Integer> getUnlockedChapters(long userId) {
+        return userDao.getUnlockedChapters(userId);
+    }
+
+    public void unlockChapterGroup(long userId, int chapterGroupId, long expiresAt) {
+        userDao.unlockChapterGroup(userId, chapterGroupId, expiresAt);
+    }
+
+    public java.util.Map<Integer, Long> getChapterExpires(long userId) {
+        return userDao.getChapterExpires(userId);
+    }
+
     public boolean deductCurrency(long userId, int coinAmount, int jewelAmount) {
         String sql = "UPDATE users SET coin = coin - ?, jewel = jewel - ? WHERE user_id = ? AND coin >= ? AND jewel >= ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
@@ -206,7 +222,7 @@ public class UserService {
             java.sql.ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 items.add(com.emu.tqqserver.proto.pkg_puser.Item.newBuilder()
-                        .setUid(rs.getInt("item_id"))
+                        .setUid((int) userId)
                         .setItemId(rs.getInt("item_id"))
                         .setQuantity(rs.getInt("quantity"))
                         .build());

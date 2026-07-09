@@ -138,15 +138,30 @@ public class ShopRoutes extends BaseRoute {
                     int jewelCost = 0;
                     if (payType == 2) {
                         coinCost = totalCost; // Assume 2 is Silver Coin
+                        paid = userService.deductCurrency(me.getUserId(), coinCost, 0);
+                        if (paid) {
+                            log.info("User {} bought shopId {} x{} cost: coin={}", me.getUserId(), shopId, quantity, coinCost);
+                        } else {
+                            log.warn("User {} failed to buy shopId {} due to insufficient funds (cost: {},0)", me.getUserId(), shopId, coinCost);
+                        }
                     } else {
                         jewelCost = totalCost; // Assume 1, 3, 4, 8 are Jewel
-                    }
-
-                    paid = userService.deductCurrency(me.getUserId(), coinCost, jewelCost);
-                    if (paid) {
-                        log.info("User {} bought shopId {} x{} cost: coin={}, jewel={}", me.getUserId(), shopId, quantity, coinCost, jewelCost);
-                    } else {
-                        log.warn("User {} failed to buy shopId {} due to insufficient funds (cost: {},{})", me.getUserId(), shopId, coinCost, jewelCost);
+                        int deductFreeJewel = 0;
+                        int deductPaidJewel = 0;
+                        
+                        if (me.getJewel() >= jewelCost) {
+                            deductFreeJewel = jewelCost;
+                        } else {
+                            deductFreeJewel = me.getJewel();
+                            deductPaidJewel = jewelCost - me.getJewel();
+                        }
+                        
+                        paid = userService.deductJewels(me.getUserId(), deductFreeJewel, deductPaidJewel);
+                        if (paid) {
+                            log.info("User {} bought shopId {} x{} cost: free_jewel={}, paid_jewel={}", me.getUserId(), shopId, quantity, deductFreeJewel, deductPaidJewel);
+                        } else {
+                            log.warn("User {} failed to buy shopId {} due to insufficient funds (cost: free={}, paid={})", me.getUserId(), shopId, deductFreeJewel, deductPaidJewel);
+                        }
                     }
                 }
 
@@ -192,8 +207,17 @@ public class ShopRoutes extends BaseRoute {
     /** POST /shop/updatelineupauto */
     @Route("/shop/updatelineupauto")
     public void updateLineupAuto(ChannelHandlerContext ctx, FullHttpRequest req) {
-        log.debug("shop/updatelineupauto");
-        sendNocontent(ctx, req);
+        log.info("shop/updatelineupauto");
+        UserEntity me = requireUser(req);
+        if (me == null) {
+            sendNocontent(ctx, req);
+            return;
+        }
+        UserService userService = new UserService();
+        me = userService.findById(me.getUserId());
+        com.emu.tqqserver.proto.pkg_proto.ShopResult.Builder builder = com.emu.tqqserver.proto.pkg_proto.ShopResult.newBuilder();
+        builder.setStoredData(new StoredDataService().build(me));
+        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, builder.build().toByteArray());
     }
     @Route("/shop/buy")
     public void buy(ChannelHandlerContext ctx, FullHttpRequest req) { log.info("shop/buy"); processBuy(ctx, req, false); }

@@ -17,6 +17,8 @@ import com.emu.tqqserver.game.user.UserEntity;
 
 import java.util.List;
 
+import com.emu.tqqserver.proto.pkg_proto.PuzzleHelper;
+
 public class PuzzleRoutes extends BaseRoute {
 
     private final StoredDataService storedDataService = new StoredDataService();
@@ -38,23 +40,36 @@ public class PuzzleRoutes extends BaseRoute {
         int stageId = 1001; // default fallback stage
         if (reqBody.has("stage_id")) {
             stageId = reqBody.get("stage_id").asInt(1001);
-        } else if (reqBody.has("stage_id[]")) { // sometimes arrays are passed in form-url-encoded
+        } else if (reqBody.has("stage_id[]")) { 
             stageId = reqBody.get("stage_id[]").asInt(1001);
+        } else if (reqBody.has("sid")) {
+            stageId = reqBody.get("sid").asInt(1001);
+        } else if (reqBody.has("stage_group_id")) {
+            stageId = reqBody.get("stage_group_id").asInt(1001);
         }
+        
+        int ap = reqBody.path("ap").asInt(1);
+        int helperUid = reqBody.path("helper_uid").asInt(0);
 
-        puzzleService.startPuzzle(userId, stageId);
+        PuzzleService.PuzzleSession pSession = puzzleService.startPuzzle(userId, stageId, ap);
+
+        // Update stored data with the new PUID
+        com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
+        if (pSession != null) {
+            sdBuilder.setPuzzle(com.emu.tqqserver.proto.pkg_puser.Puzzle.newBuilder().setPuid(pSession.puid).build());
+        }
 
         // Build a mock helper list user to show on screen
         com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
             .setId(1823880390)
-            .setUid(10003)
+            .setUid(helperUid > 0 ? helperUid : 10003)
             .setCardId(10651)
             .build();
 
         ListUser helper = ListUser.newBuilder()
-            .setUid(10003)
+            .setUid(helperUid > 0 ? helperUid : 10003)
             .setLevel(75)
-            .setName("三玖ちゃん")
+            .setName(helperUid > 0 ? "Friend " + helperUid : "三玖ちゃん")
             .setComment("助っ人です！よろしくね")
             .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
             .setLeader(leaderCard)
@@ -62,7 +77,7 @@ public class PuzzleRoutes extends BaseRoute {
             .build();
 
         PuzzleStart response = PuzzleStart.newBuilder()
-            .setStoredData(storedDataService.build(user))
+            .setStoredData(sdBuilder.build())
             .setHelper(helper)
             .build();
 
@@ -80,27 +95,37 @@ public class PuzzleRoutes extends BaseRoute {
         UserEntity user = userService.findById(userId);
         if (user == null) throw new RuntimeException("User not found: " + userId);
 
-        com.fasterxml.jackson.databind.JsonNode reqBody = getJsonBody(req);
-        String uniqId = reqBody.has("uniqId") ? reqBody.get("uniqId").asText() : reqBody.path("uniq_id").asText("");
-        int score = reqBody.has("score") ? reqBody.get("score").asInt() : 0;
-        int clearType = reqBody.has("clearType") ? reqBody.get("clearType").asInt() : reqBody.path("clear_type").asInt(3);
-        int stars = clearType > 0 ? clearType : 3;
-
+        String uniqId = "";
+        int score = 0;
+        int clearType = 3; // 3 stars fallback
         int stageId = 1001;
-        if (reqBody.has("stage_id")) {
-            stageId = reqBody.get("stage_id").asInt(1001);
-        } else if (uniqId != null && !uniqId.isEmpty()) {
-            try {
-                String digits = uniqId.replaceAll("\\D+", "");
-                if (!digits.isEmpty()) {
-                    stageId = Integer.parseInt(digits);
-                }
-            } catch (Exception e) {
-                // ignore
+        
+        try {
+            // Priority 1: Protobuf
+            byte[] body = getBody(req);
+            if (body.length > 0) {
+                com.emu.tqqserver.proto.pkg_proto.RequestPuzzleClear protoReq = com.emu.tqqserver.proto.pkg_proto.RequestPuzzleClear.parseFrom(body);
+                uniqId = protoReq.getPuzzleUniqId();
+                score = protoReq.getScore();
+                clearType = protoReq.getClearType();
             }
+        } catch (Exception e) {
+            log.warn("Failed to parse RequestPuzzleClear protobuf, fallback to form: {}", e.getMessage());
+            com.fasterxml.jackson.databind.JsonNode reqBody = getJsonBody(req);
+            uniqId = reqBody.has("uniqId") ? reqBody.get("uniqId").asText() : reqBody.path("puzzle_uniq_id").asText("");
+            score = reqBody.path("score").asInt();
+            clearType = reqBody.path("clear_type").asInt(3);
         }
 
-        List<Goods> rewards = puzzleService.clearPuzzle(userId, stageId, score, stars);
+        PuzzleService.PuzzleSession pSession = puzzleService.getActiveSession(userId);
+        if (pSession != null && (uniqId == null || uniqId.isEmpty() || uniqId.equals(pSession.puid))) {
+            stageId = pSession.stageId;
+        }
+
+        List<Goods> rewards = puzzleService.clearPuzzle(userId, stageId, score, clearType);
+        
+        // Clear session
+        puzzleService.clearSession(userId);
 
         com.emu.tqqserver.game.card.CardService cardService = new com.emu.tqqserver.game.card.CardService();
         List<com.emu.tqqserver.game.user.CardEntity> cards = cardService.getUserCards(userId);
@@ -114,8 +139,12 @@ public class PuzzleRoutes extends BaseRoute {
                 .build());
         }
 
+        // Clear the PUID in StoredData so client knows puzzle ended
+        com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
+        sdBuilder.clearPuzzle();
+
         PuzzleResult response = PuzzleResult.newBuilder()
-            .setStoredData(storedDataService.build(user))
+            .setStoredData(sdBuilder.build())
             .setNewRecord(true)
             .setScore(score)
             .addAllStageClearReward(rewards)
@@ -125,11 +154,42 @@ public class PuzzleRoutes extends BaseRoute {
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
     }
 
+    /** POST /puzzle/fail */
+    @Route("/puzzle/fail")
+    public void fail(ChannelHandlerContext ctx, FullHttpRequest req) {
+        log.info("puzzle/fail");
+        UserEntity user = requireUser(req);
+        
+        // Clear session on fail
+        puzzleService.clearSession(user.getUserId());
+        
+        com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
+        sdBuilder.clearPuzzle();
+        
+        com.emu.tqqserver.proto.pkg_proto.Nocontent response = com.emu.tqqserver.proto.pkg_proto.Nocontent.newBuilder()
+            .setStoredData(sdBuilder.build())
+            .build();
+            
+        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
+    }
+
     /** POST /puzzle/retire */
     @Route("/puzzle/retire")
     public void retire(ChannelHandlerContext ctx, FullHttpRequest req) {
-        log.debug("puzzle/retire");
-        sendNocontent(ctx, req);
+        log.info("puzzle/retire");
+        UserEntity user = requireUser(req);
+        
+        // Clear session on retire
+        puzzleService.clearSession(user.getUserId());
+        
+        com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
+        sdBuilder.clearPuzzle();
+        
+        com.emu.tqqserver.proto.pkg_proto.Nocontent response = com.emu.tqqserver.proto.pkg_proto.Nocontent.newBuilder()
+            .setStoredData(sdBuilder.build())
+            .build();
+            
+        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
     }
 
     /** POST /puzzle/continue */
@@ -170,7 +230,7 @@ public class PuzzleRoutes extends BaseRoute {
 
             com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                 .setId(1823880390) // Default card id for now
-                .setUid(10003)
+                .setUid((int)u.getUserId())
                 .setCardId(10651)
                 .build();
 
@@ -183,10 +243,55 @@ public class PuzzleRoutes extends BaseRoute {
                 .setLeader(leaderCard)
                 .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
                 .build();
-                
             responseBuilder.addHelpers(helper);
         }
+
+        // Add dummy helper 1
+        responseBuilder.addHelpers(com.emu.tqqserver.proto.pkg_proto.ListUser.newBuilder()
+            .setUid(1002)
+            .setLevel(100)
+            .setName("Nakano Miku")
+            .setComment("Matcha soda")
+            .setLastLoginTs((int)(System.currentTimeMillis() / 1000) - 3600)
+            .setFriend("none")
+            .setLeader(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                .setId(1002)
+                .setUid(1002)
+                .setCardId(20012)
+                .setLevel(50)
+                .setLevelAwake(50)
+                .setLimitbreakRank(4)
+                .setActiveSkillLevel(5)
+                .setPassiveSkillLevel1(5)
+                .setKirameki(0)
+                .setTokimeki(0)
+                .build())
+            .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
+            .build());
             
+        // Add dummy helper 2
+        responseBuilder.addHelpers(com.emu.tqqserver.proto.pkg_proto.ListUser.newBuilder()
+            .setUid(1003)
+            .setLevel(80)
+            .setName("Uesugi Fuutarou")
+            .setComment("Study!")
+            .setLastLoginTs((int)(System.currentTimeMillis() / 1000) - 7200)
+            .setFriend("none")
+            .setLeader(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                .setId(1003)
+                .setUid(1003)
+                .setCardId(20013)
+                .setLevel(40)
+                .setLevelAwake(40)
+                .setLimitbreakRank(2)
+                .setActiveSkillLevel(3)
+                .setPassiveSkillLevel1(3)
+                .setKirameki(0)
+                .setTokimeki(0)
+                .build())
+            .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
+            .build());
+
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, responseBuilder.build().toByteArray());
     }
 

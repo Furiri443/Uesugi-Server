@@ -73,6 +73,8 @@ public class DatabaseManager {
 
             stmt.executeUpdate(SQL_CREATE_USER_ITEMS);
             stmt.executeUpdate(SQL_CREATE_USER_CARDS);
+            stmt.executeUpdate(SQL_CREATE_USER_CHAPTERS);
+            stmt.executeUpdate(SQL_CREATE_USER_CHAPTER_EXPIRES);
             stmt.executeUpdate(SQL_CREATE_USER_UNITS);
             stmt.executeUpdate(SQL_CREATE_USER_MEMBERS);
             stmt.executeUpdate(SQL_CREATE_USER_STAGES);
@@ -85,9 +87,13 @@ public class DatabaseManager {
             stmt.executeUpdate(SQL_CREATE_USER_COLLECTION_ELEMENTS);
 
             // Create many-to-many lookup tables
-            stmt.executeUpdate(SQL_CREATE_USER_COOKING);
-            stmt.executeUpdate(SQL_CREATE_USER_FRIENDS);
-            stmt.executeUpdate(SQL_CREATE_USER_BLOCKS);
+            stmt.execute(SQL_CREATE_USER_COOKING);
+            stmt.execute(SQL_CREATE_USER_FRIENDS);
+            stmt.execute(SQL_CREATE_USER_BLOCKS);
+            stmt.execute(SQL_CREATE_USER_GACHA_HISTORY);
+            try {
+                stmt.execute("ALTER TABLE user_gacha_history ADD COLUMN pending_choice_cnt INTEGER NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {}
 
             // Migration to add profile options to users if they don't exist
             try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN profile_background_id INTEGER NOT NULL DEFAULT 0"); } catch (SQLException ignored) {}
@@ -172,6 +178,25 @@ public class DatabaseManager {
             is_new       INTEGER NOT NULL DEFAULT 1,
             obtained_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
             UNIQUE(user_id, card_id)
+        )
+        """;
+
+    // ── Chapters (Story/Campaign progress) ─────────────────────────────────────
+    private static final String SQL_CREATE_USER_CHAPTERS = """
+        CREATE TABLE IF NOT EXISTS user_chapters (
+            user_id INTEGER NOT NULL REFERENCES users(user_id),
+            chapter_id INTEGER NOT NULL,
+            status INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (user_id, chapter_id)
+        )
+        """;
+
+    private static final String SQL_CREATE_USER_CHAPTER_EXPIRES = """
+        CREATE TABLE IF NOT EXISTS user_chapter_expires (
+            user_id INTEGER NOT NULL REFERENCES users(user_id),
+            chapter_group_id INTEGER NOT NULL,
+            expires_at INTEGER NOT NULL,
+            PRIMARY KEY (user_id, chapter_group_id)
         )
         """;
 
@@ -342,6 +367,18 @@ public class DatabaseManager {
             blocked_user_id INTEGER NOT NULL REFERENCES users(user_id),
             created_at      INTEGER NOT NULL DEFAULT (strftime('%s','now')),
             PRIMARY KEY (user_id, blocked_user_id)
+        )
+        """;
+
+    private static final String SQL_CREATE_USER_GACHA_HISTORY = """
+        CREATE TABLE IF NOT EXISTS user_gacha_history (
+            user_id         INTEGER NOT NULL REFERENCES users(user_id),
+            gacha_id        INTEGER NOT NULL,
+            total_cnt       INTEGER NOT NULL DEFAULT 0,
+            free_roll_used  INTEGER NOT NULL DEFAULT 0,
+            limit_cnt       INTEGER NOT NULL DEFAULT 0,
+            pending_choice_cnt INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (user_id, gacha_id)
         )
         """;
 }

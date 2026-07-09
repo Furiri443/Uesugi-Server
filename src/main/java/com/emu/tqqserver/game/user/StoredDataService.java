@@ -74,18 +74,6 @@ public class StoredDataService {
                         members = memberDao.getMembers(user.getUserId());
                 }
 
-                com.emu.tqqserver.proto.pkg_puser.Chapter.Builder chapterBuilder = com.emu.tqqserver.proto.pkg_puser.Chapter
-                                .newBuilder()
-                                .setUid((int) user.getUserId())
-                                .setStatus(1);
-                                
-                java.util.Collection<com.emu.tqqserver.data.resources.ChapterDef> chapters = com.emu.tqqserver.data.GameData.getChapterDataTable().values();
-                if (!chapters.isEmpty()) {
-                        chapterBuilder.setChapterId(chapters.iterator().next().getId());
-                } else {
-                        chapterBuilder.setChapterId(1);
-                }
-
                 com.emu.tqqserver.proto.pkg_puser.Stage.Builder stageBuilder = com.emu.tqqserver.proto.pkg_puser.Stage.newBuilder()
                                 .setUid((int) user.getUserId())
                                 .setRank(3);
@@ -172,12 +160,12 @@ public class StoredDataService {
                 java.util.List<com.emu.tqqserver.proto.pkg_puser.HomeActor> homeActors = homeService.getHomeActors(user.getUserId());
 
                 StoredData.Builder builder = StoredData.newBuilder()
+                                .addClear("chapter_expire")
                                 .setUser(protoUser)
                                 .addAllHomeActor(homeActors)
                                 .setCurrency(currency)
                                 .addAllUnit(units)
                                 .addAllMember(members)
-                                .addChapter(chapterBuilder.build())
                                 .addStage(stageBuilder.build())
                                 .setWork(work)
                                 .setMileage(mileage)
@@ -186,6 +174,34 @@ public class StoredDataService {
                                 .setOptions(options);
                                 
                 UserService userService = new UserService();
+                java.util.List<Integer> chapterIds = userService.getUnlockedChapters(user.getUserId());
+                if (chapterIds.isEmpty()) {
+                    builder.addChapter(com.emu.tqqserver.proto.pkg_puser.Chapter.newBuilder()
+                            .setUid((int) user.getUserId())
+                            .setStatus(1)
+                            .setChapterId(1)
+                            .build());
+                } else {
+                    for (int chId : chapterIds) {
+                        builder.addChapter(com.emu.tqqserver.proto.pkg_puser.Chapter.newBuilder()
+                                .setUid((int) user.getUserId())
+                                .setStatus(1)
+                                .setChapterId(chId)
+                                .build());
+                    }
+                }
+                
+                java.util.Map<Integer, Long> chapterExpires = userService.getChapterExpires(user.getUserId());
+                for (java.util.Map.Entry<Integer, Long> entry : chapterExpires.entrySet()) {
+                    builder.addChapterExpire(com.emu.tqqserver.proto.pkg_puser.ChapterExpire.newBuilder()
+                            .setUid((int) user.getUserId())
+                            .setChapterGroupId(entry.getKey())
+                            .setExpiresAt(entry.getValue().intValue())
+                            .build());
+                }
+                
+                builder.addAllItem(userService.getItems(user.getUserId()));
+                
                 java.util.List<Integer> bgIds = userService.getHomeBackgrounds(user.getUserId());
                 if (bgIds.isEmpty()) {
                     builder.addHomeBackground(com.emu.tqqserver.proto.pkg_puser.HomeBackground.newBuilder()
@@ -231,6 +247,10 @@ public class StoredDataService {
 
                 java.util.List<Integer> funcTutorialIds = userService.getFuncTutorials(user.getUserId());
                 builder.addAllFuncTutorialIds(funcTutorialIds);
+                
+                com.emu.tqqserver.game.gacha.GachaDao gachaDao = new com.emu.tqqserver.game.gacha.GachaDao();
+                builder.addAllGachaHistory(gachaDao.getAllHistory(user.getUserId()));
+                
                 builder.setReview(0)
                                 .setPresentCount(0)
                                 .setNewsLatestId(0)

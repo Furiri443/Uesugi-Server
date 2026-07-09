@@ -42,6 +42,8 @@ public class GachaRoutes extends BaseRoute {
         int ticketId = Integer.parseInt(params.getOrDefault("ticket_id", "0"));
 
         com.emu.tqqserver.game.user.UserService userService = new com.emu.tqqserver.game.user.UserService();
+        com.emu.tqqserver.game.gacha.GachaDao gachaDao = new com.emu.tqqserver.game.gacha.GachaDao();
+        com.emu.tqqserver.proto.pkg_pmisc.GachaHistory gachaHistory = gachaDao.getGachaHistory(user.getUserId(), gachaId);
         
         // Deduct ticket/currency
         boolean deductionSuccess = true;
@@ -54,7 +56,14 @@ public class GachaRoutes extends BaseRoute {
         if (gachaDef != null) {
             com.emu.tqqserver.data.resources.GachaOptionDef opt = com.emu.tqqserver.data.GameData.getGachaOptionDataTable().get(gachaDef.getGachaOptionId());
             if (opt != null) {
-                if (pay == 5) { // Ticket (Item)
+                if (pay == 1) { // Free Roll
+                    if (gachaDef.getFreeSingleGachaCount() <= 0 || gachaHistory.getSingleCnt() >= 1) { // Using single_cnt as free_roll_used
+                        log.warn("Free roll not available or already used for user={} gacha={}", user.getUserId(), gachaId);
+                        HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.BAD_REQUEST, null);
+                        return;
+                    }
+                    cost = 0;
+                } else if (pay == 5) { // Ticket (Item)
                     cost = (mode == 2) ? opt.getLumpNumTicket() : 1;
                     if (cost <= 0) cost = 1; // Fallback
                     deductTicket = cost;
@@ -94,6 +103,15 @@ public class GachaRoutes extends BaseRoute {
         }
 
         int drawCount = (mode == 2) ? 10 : 1;
+        
+        if (pay == 1) {
+            gachaDao.markFreeRollUsed(user.getUserId(), gachaId);
+        }
+        gachaDao.incrementRollCount(user.getUserId(), gachaId, drawCount);
+        
+        // Fetch updated history
+        gachaHistory = gachaDao.getGachaHistory(user.getUserId(), gachaId);
+
         com.emu.tqqserver.proto.pkg_proto.GachaResult.Builder resultBuilder = com.emu.tqqserver.proto.pkg_proto.GachaResult.newBuilder();
         
         int[] drawnCards = new int[drawCount];
@@ -108,6 +126,43 @@ public class GachaRoutes extends BaseRoute {
             cardCounts.put(cardId, cardCounts.getOrDefault(cardId, 0) + 1);
         }
 
+        // Check Milestone (Pity)
+        if (gachaDef != null && gachaDef.getLimitCount() > 0 && gachaHistory.getLimitCnt() >= gachaDef.getLimitCount()) {
+            gachaDao.resetLimitCount(user.getUserId(), gachaId);
+            
+            // If there's a choice bonus configured
+            if (gachaDef.getGachaBonusChoiceId() > 0) {
+                // Determine if there's only 1 choice (auto-reward)
+                java.util.List<com.emu.tqqserver.data.resources.GachaBonusChoiceDef> choices = 
+                    com.emu.tqqserver.data.GameData.getGachaBonusChoiceDataTable().values().stream()
+                        .filter(c -> c.getId() == gachaDef.getGachaBonusChoiceId())
+                        .collect(java.util.stream.Collectors.toList());
+                
+                if (choices.size() == 1) {
+                    // Auto-give the only card
+                    int autoCardId = choices.get(0).getTargetId();
+                    cardCounts.put(autoCardId, cardCounts.getOrDefault(autoCardId, 0) + 1);
+                    com.emu.tqqserver.proto.pkg_proto.Goods bonusGoods = com.emu.tqqserver.proto.pkg_proto.Goods.newBuilder()
+                        .setCategory(2) // Card
+                        .setTargetId(autoCardId)
+                        .setQuantity(1)
+                        .build();
+                    resultBuilder.addCountGachaRewards(bonusGoods);
+                    // Insert into DB
+                    int[] autoDrawn = new int[]{autoCardId};
+                    try {
+                        new com.emu.tqqserver.game.user.UserDao().ensureDefaultCards(user.getUserId(), autoDrawn);
+                        gachaDao.logGacha(user.getUserId(), gachaId, autoCardId, 5); // Milestone reward
+                    } catch (Exception e) {}
+                } else {
+                    // Provide a Choice Bonus token/index for the user to use in /gacha/choicebonus
+                    // Let the client know they reached pity and have a choice
+                    resultBuilder.setChoiceBonusIdx(gachaDef.getGachaBonusChoiceId());
+                    gachaDao.incrementPendingChoiceCount(user.getUserId(), gachaId);
+                }
+            }
+        }
+
         for (java.util.Map.Entry<Integer, Integer> entry : cardCounts.entrySet()) {
             com.emu.tqqserver.proto.pkg_proto.Goods card = com.emu.tqqserver.proto.pkg_proto.Goods.newBuilder()
                 .setCategory(2)
@@ -119,7 +174,6 @@ public class GachaRoutes extends BaseRoute {
 
         try {
             new com.emu.tqqserver.game.user.UserDao().ensureDefaultCards(user.getUserId(), drawnCards);
-            com.emu.tqqserver.game.gacha.GachaDao gachaDao = new com.emu.tqqserver.game.gacha.GachaDao();
             for (int cardId : drawnCards) {
                 gachaDao.logGacha(user.getUserId(), gachaId, cardId, 3); // Default rarity 3 for now
             }
@@ -141,9 +195,75 @@ public class GachaRoutes extends BaseRoute {
     @Route("/gacha/switch_box")
     public void switchBox(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("gacha/switch_box"); sendNocontent(ctx, req); }
     @Route("/gacha/choicebonus")
-    public void choiceBonus(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("gacha/choicebonus"); sendNocontent(ctx, req); }
+    public void choiceBonus(ChannelHandlerContext ctx, FullHttpRequest req) { 
+        log.info("gacha/choicebonus");
+        try {
+            String bodyString = req.content().toString(io.netty.util.CharsetUtil.UTF_8);
+            log.info("choiceBonus requested with body: {}", bodyString);
+            
+            com.emu.tqqserver.game.user.UserEntity user = requireUser(req);
+            io.netty.handler.codec.http.QueryStringDecoder decoder = new io.netty.handler.codec.http.QueryStringDecoder(bodyString, false);
+            java.util.Map<String, java.util.List<String>> params = decoder.parameters();
+            
+            int gachaId = Integer.parseInt(params.getOrDefault("gacha_id", java.util.List.of("0")).get(0));
+            int targetId = Integer.parseInt(params.getOrDefault("target_id", java.util.List.of("0")).get(0));
+            if (targetId == 0) targetId = Integer.parseInt(params.getOrDefault("choice_id", java.util.List.of("0")).get(0));
+            if (targetId == 0) targetId = Integer.parseInt(params.getOrDefault("card_id", java.util.List.of("0")).get(0));
+            
+            com.emu.tqqserver.game.gacha.GachaDao gachaDao = new com.emu.tqqserver.game.gacha.GachaDao();
+            int pending = gachaDao.getPendingChoiceCount(user.getUserId(), gachaId);
+            if (pending <= 0) {
+                log.warn("No pending choice bonus for user={} gacha={}", user.getUserId(), gachaId);
+                HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.BAD_REQUEST, null);
+                return;
+            }
+            
+            // Deduct pending choice
+            gachaDao.decrementPendingChoiceCount(user.getUserId(), gachaId);
+            
+            // Grant the card
+            com.emu.tqqserver.proto.pkg_proto.GachaResult.Builder resultBuilder = com.emu.tqqserver.proto.pkg_proto.GachaResult.newBuilder();
+            com.emu.tqqserver.proto.pkg_proto.Goods bonusGoods = com.emu.tqqserver.proto.pkg_proto.Goods.newBuilder()
+                .setCategory(2) // Card
+                .setTargetId(targetId)
+                .setQuantity(1)
+                .build();
+            resultBuilder.addCountGachaRewards(bonusGoods);
+            
+            try {
+                new com.emu.tqqserver.game.user.UserDao().ensureDefaultCards(user.getUserId(), new int[]{targetId});
+                gachaDao.logGacha(user.getUserId(), gachaId, targetId, 5); // Milestone reward
+            } catch (Exception e) {}
+            
+            com.emu.tqqserver.game.user.UserService userService = new com.emu.tqqserver.game.user.UserService();
+            user = userService.findById(user.getUserId());
+            resultBuilder.setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(user));
+            
+            HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, resultBuilder.build().toByteArray());
+            return;
+        } catch (Exception e) {
+            log.error("Failed to process choiceBonus", e);
+        }
+        sendNocontent(ctx, req); 
+    }
     @Route("/gacha/panel_board")
-    public void panelBoard(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("gacha/panel_board"); sendNocontent(ctx, req); }
+    public void panelBoard(ChannelHandlerContext ctx, FullHttpRequest req) { 
+        log.debug("gacha/panel_board"); 
+        
+        java.util.Map<String, String> params = new java.util.HashMap<>();
+        if (req.method().equals(io.netty.handler.codec.http.HttpMethod.GET)) {
+            io.netty.handler.codec.http.QueryStringDecoder decoder = new io.netty.handler.codec.http.QueryStringDecoder(req.uri());
+            for (java.util.Map.Entry<String, java.util.List<String>> entry : decoder.parameters().entrySet()) {
+                params.put(entry.getKey(), entry.getValue().get(0));
+            }
+        }
+        int gachaId = Integer.parseInt(params.getOrDefault("gacha_id", "0"));
+
+        com.emu.tqqserver.proto.pkg_proto.GachaPanelBoard res = com.emu.tqqserver.proto.pkg_proto.GachaPanelBoard.newBuilder()
+            .setGachaId(gachaId)
+            .build();
+        HttpApiHandler.sendProto(ctx, req, io.netty.handler.codec.http.HttpResponseStatus.OK, res.toByteArray());
+    }
     @Route("/gacha/panel_board/lot")
     public void panelBoardLot(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("gacha/panel_board/lot"); sendNocontent(ctx, req); }
     @Route("/gacha/panel_board/reset")

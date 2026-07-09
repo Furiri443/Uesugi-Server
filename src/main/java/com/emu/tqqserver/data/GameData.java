@@ -824,6 +824,16 @@ public class GameData {
         return rewardDataTable;
     }
 
+    public static java.util.List<RewardDef> getRewards(int rewardGroupId) {
+        java.util.List<RewardDef> results = new java.util.ArrayList<>();
+        for (RewardDef def : rewardDataTable.values()) {
+            if (def.getId() == rewardGroupId) {
+                results.add(def);
+            }
+        }
+        return results;
+    }
+
     public static DataTable<RewardCardPropertyDef> getRewardCardPropertyDataTable() {
         return rewardCardPropertyDataTable;
     }

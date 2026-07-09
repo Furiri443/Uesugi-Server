@@ -236,6 +236,65 @@ public class UserDao extends BaseDao {
         }
     }
 
+    public void unlockChapter(long userId, int chapterId) {
+        String sql = "INSERT OR IGNORE INTO user_chapters (user_id, chapter_id, status) VALUES (?, ?, 1)";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, chapterId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to unlock chapter", e);
+        }
+    }
+
+    public java.util.List<Integer> getUnlockedChapters(long userId) {
+        java.util.List<Integer> chapters = new java.util.ArrayList<>();
+        String sql = "SELECT chapter_id FROM user_chapters WHERE user_id = ? AND status = 1";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    chapters.add(rs.getInt("chapter_id"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get unlocked chapters", e);
+        }
+        return chapters;
+    }
+
+    public void unlockChapterGroup(long userId, int chapterGroupId, long expiresAt) {
+        String sql = "INSERT OR REPLACE INTO user_chapter_expires (user_id, chapter_group_id, expires_at) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, chapterGroupId);
+            ps.setLong(3, expiresAt);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to unlock chapter group", e);
+        }
+    }
+
+    public java.util.Map<Integer, Long> getChapterExpires(long userId) {
+        java.util.Map<Integer, Long> map = new java.util.HashMap<>();
+        String sql = "SELECT chapter_group_id, expires_at FROM user_chapter_expires WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    map.put(rs.getInt("chapter_group_id"), rs.getLong("expires_at"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get chapter expires", e);
+        }
+        return map;
+    }
+
     public void updateOptions(long userId, int bgm, int se, int voice, int protectCardR6, int protectCardR5, int protectCardFirst) {
         String sql = "UPDATE users SET option_bgm = ?, option_se = ?, option_voice = ?, option_protect_card_r6 = ?, option_protect_card_r5 = ?, option_protect_card_first = ? WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
