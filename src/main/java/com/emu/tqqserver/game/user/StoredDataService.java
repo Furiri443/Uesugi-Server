@@ -16,6 +16,48 @@ import com.emu.tqqserver.proto.pkg_puser.User;
 public class StoredDataService {
     private final HomeService homeService = new HomeService();
 
+    /**
+     * Compute safe exp and level for a card, ensuring the client never sees level 0.
+     * The client computes level from exp using LevelGrowth data. If exp is below the
+     * threshold for level 1, the client computes level=0, which causes KeyNotFoundException.
+     * 
+     * @return int[2] where [0] = safe exp, [1] = safe level
+     */
+    private static int[] computeSafeExpAndLevel(int cardId, int rawExp, int rawLevel) {
+        com.emu.tqqserver.data.resources.CardDef cardDef = com.emu.tqqserver.data.GameData.getCardDataTable().get(cardId);
+        if (cardDef == null) {
+            // Unknown card, just ensure level >= 1
+            return new int[]{ Math.max(rawExp, 1), Math.max(rawLevel, 1) };
+        }
+
+        int levelGrowthId = cardDef.getLevelGrowthId();
+
+        // Find the exp threshold for level 1 (minimum exp to be considered level 1)
+        int level1Exp = 0;
+        for (com.emu.tqqserver.data.resources.LevelGrowthDef g : com.emu.tqqserver.data.GameData.getLevelGrowthDataTable().values()) {
+            if (g.getId() == levelGrowthId && g.getLevel() == 1) {
+                level1Exp = g.getValue();
+                break;
+            }
+        }
+
+        // Ensure exp is at least level1Exp + 1 (so client computes level >= 1)
+        int safeExp = rawExp;
+        if (safeExp <= level1Exp) {
+            safeExp = level1Exp + 1;
+        }
+
+        // Compute the correct level from exp using the same algorithm the client uses
+        int computedLevel = 1;
+        for (com.emu.tqqserver.data.resources.LevelGrowthDef g : com.emu.tqqserver.data.GameData.getLevelGrowthDataTable().values()) {
+            if (g.getId() == levelGrowthId && safeExp >= g.getValue() && g.getLevel() > computedLevel) {
+                computedLevel = g.getLevel();
+            }
+        }
+
+        return new int[]{ safeExp, computedLevel };
+    }
+
         /** Build StoredData tối thiểu (user + currency) cho một user hiện tại. */
         public StoredData build(UserEntity user) {
                 User protoUser = user.toProto();
@@ -81,11 +123,12 @@ public class StoredDataService {
                 com.emu.tqqserver.proto.pkg_puser.Card leaderCard;
                 com.emu.tqqserver.game.user.CardEntity leaderCardEntity = cardService.getUserCardsMap(user.getUserId()).get(mainCardId);
                 if (leaderCardEntity != null) {
+                        int[] safeLeader = computeSafeExpAndLevel(leaderCardEntity.getCardId(), leaderCardEntity.getExp(), leaderCardEntity.getLevel());
                         leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                             .setId(leaderCardEntity.getId())
                             .setCardId(leaderCardEntity.getCardId())
-                            .setLevel(leaderCardEntity.getLevel())
-                            .setExp(leaderCardEntity.getExp())
+                            .setLevel(safeLeader[1])
+                            .setExp(safeLeader[0])
                             .setLimitbreakRank(leaderCardEntity.getLimitbreakRank())
                             .build();
                 } else {
@@ -200,12 +243,13 @@ public class StoredDataService {
 
                 java.util.List<com.emu.tqqserver.game.user.CardEntity> userCards = userService.getUserCards(user.getUserId());
                 for (com.emu.tqqserver.game.user.CardEntity card : userCards) {
+                    int[] safe = computeSafeExpAndLevel(card.getCardId(), card.getExp(), card.getLevel());
                     builder.addCard(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                             .setId(card.getId())
                             .setUid((int) user.getUserId())
                             .setCardId(card.getCardId())
-                            .setExp(card.getExp())
-                            .setLevel(card.getLevel())
+                            .setExp(safe[0])
+                            .setLevel(safe[1])
                             .setInterludeVoice1(1)
                             .setInterludeVoice2(1)
                             .setInterludeVoice3(1)

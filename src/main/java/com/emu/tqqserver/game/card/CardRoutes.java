@@ -78,6 +78,7 @@ public class CardRoutes extends BaseRoute {
                     }
                     
                     int oldExp = baseCard.getExp();
+                    log.info("card/enhance cardId={} growthId={} baseExp={} dbExp={} dbLevel={}", baseCard.getCardId(), levelGrowthId, baseExp, oldExp, baseCard.getLevel());
                     if (oldExp <= baseExp) {
                         oldExp = baseExp + 1;
                     }
@@ -112,16 +113,11 @@ public class CardRoutes extends BaseRoute {
                     userDao.deleteCards(materialIds);
                     userDao.updateCardExpAndLevel(baseId, newExp, newLevel);
                     
+                    log.info("card/enhance RESULT: oldExp={} -> newExp={}, newLevel={}, maxLevel={}, addedExp={}", oldExp, newExp, newLevel, maxLevel, addedExp);
+
                     // Return EnhancementResult
                     com.emu.tqqserver.proto.pkg_proto.EnhancementResult result = com.emu.tqqserver.proto.pkg_proto.EnhancementResult.newBuilder()
                         .setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(me))
-                        .setCardLevel(newLevel)
-                        .setCardExp(newExp)
-                        .setCardExpBase(addedExp)
-                        .setCardExpVip(0)
-                        .setCardExpCampaign(0)
-                        .setCardMaxLevel(maxLevel)
-                        .setLimitbreakRank(baseCard.getLimitbreakRank())
                         .setBeforeResourceIdx(1)
                         .setAfterResourceIdx(1)
                         .setPassiveSkill1(true)
@@ -228,13 +224,6 @@ public class CardRoutes extends BaseRoute {
                     // Return EnhancementResult
                     com.emu.tqqserver.proto.pkg_proto.EnhancementResult result = com.emu.tqqserver.proto.pkg_proto.EnhancementResult.newBuilder()
                         .setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(me))
-                        .setCardLevel(newLevel)
-                        .setCardExp(newExp)
-                        .setCardExpBase(addedExp)
-                        .setCardExpVip(0)
-                        .setCardExpCampaign(0)
-                        .setCardMaxLevel(maxLevel)
-                        .setLimitbreakRank(baseCard.getLimitbreakRank())
                         .setBeforeResourceIdx(1)
                         .setAfterResourceIdx(1)
                         .setPassiveSkill1(true)

@@ -102,6 +102,9 @@ public class DatabaseManager {
             try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_protect_card_r5 INTEGER NOT NULL DEFAULT 1"); } catch (SQLException ignored) {}
             try { stmt.executeUpdate("ALTER TABLE users ADD COLUMN option_protect_card_first INTEGER NOT NULL DEFAULT 1"); } catch (SQLException ignored) {}
 
+            // Migration to fix existing cards with exp=0 which crashes the client
+            try { stmt.executeUpdate("UPDATE user_cards SET exp = 1 WHERE exp = 0"); } catch (SQLException ignored) {}
+
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS user_home_backgrounds (user_id INTEGER NOT NULL REFERENCES users(user_id), bg_id INTEGER NOT NULL, PRIMARY KEY (user_id, bg_id))");
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS user_clothes (user_id INTEGER NOT NULL REFERENCES users(user_id), clothes_id INTEGER NOT NULL, PRIMARY KEY (user_id, clothes_id))");
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS user_functutorials (user_id INTEGER NOT NULL REFERENCES users(user_id), tutorial_id INTEGER NOT NULL, PRIMARY KEY (user_id, tutorial_id))");
