@@ -152,6 +152,22 @@ public class UserService {
         }
     }
 
+    public boolean deductJewels(long userId, int freeJewel, int paidJewel) {
+        String sql = "UPDATE users SET jewel = jewel - ?, pay_jewel = pay_jewel - ? WHERE user_id = ? AND jewel >= ? AND pay_jewel >= ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, freeJewel);
+            ps.setInt(2, paidJewel);
+            ps.setLong(3, userId);
+            ps.setInt(4, freeJewel);
+            ps.setInt(5, paidJewel);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            log.error("Failed to deduct jewels", e);
+            return false;
+        }
+    }
+
     public void addItem(long userId, int itemId, int quantity) {
         String sql = "INSERT INTO user_items (user_id, item_id, quantity) VALUES (?, ?, ?) ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + ?, updated_at = strftime('%s','now')";
         try (Connection conn = DatabaseManager.getInstance().getConnection();

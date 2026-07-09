@@ -174,12 +174,30 @@ public class PresentService {
     }
 
     private Present mapRow(ResultSet rs) throws SQLException {
+        int category = rs.getInt("category");
+        int targetId = rs.getInt("target_id");
+        int rewardType = category;
+        int rewardId = targetId;
+
+        // Map server-side categories to client-side MasterUtil.RewardType
+        if (category == 3) {
+            rewardType = 2; // Card
+        } else if (category == 4) {
+            rewardType = 1; // Item
+        } else if (category == 1) {
+            rewardType = 1; // Item
+            if (rewardId == 0) rewardId = 1001; // Leaf
+        } else if (category == 2) {
+            rewardType = 1; // Item
+            // No known item ID for Jewel, leave as 0 (safe fallback)
+        }
+
         return Present.newBuilder()
             .setId(rs.getInt("present_id"))
             .setUid((int) rs.getLong("user_id"))
             .setStatus(0)
-            .setRewardType(rs.getInt("category"))
-            .setRewardId(rs.getInt("target_id"))
+            .setRewardType(rewardType)
+            .setRewardId(rewardId)
             .setQuantity(rs.getInt("quantity"))
             .setMessage(rs.getString("text") != null ? rs.getString("text") : "お祝い品")
             .setReason("運営プレゼント")

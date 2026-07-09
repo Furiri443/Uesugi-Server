@@ -44,11 +44,52 @@ public class GachaRoutes extends BaseRoute {
         com.emu.tqqserver.game.user.UserService userService = new com.emu.tqqserver.game.user.UserService();
         
         // Deduct ticket/currency
-        if (ticketId > 0 && pay > 0) {
-            boolean success = userService.deductItem(user.getUserId(), ticketId, pay);
-            if (!success) {
-                log.warn("User does not have enough ticket_id=" + ticketId + " amount=" + pay);
-                // Optionally return an error code, but we continue for now
+        boolean deductionSuccess = true;
+        int cost = 0;
+        int deductFreeJewel = 0;
+        int deductPaidJewel = 0;
+        int deductTicket = 0;
+
+        com.emu.tqqserver.data.resources.GachaDef gachaDef = com.emu.tqqserver.data.GameData.getGachaDataTable().get(gachaId);
+        if (gachaDef != null) {
+            com.emu.tqqserver.data.resources.GachaOptionDef opt = com.emu.tqqserver.data.GameData.getGachaOptionDataTable().get(gachaDef.getGachaOptionId());
+            if (opt != null) {
+                if (pay == 5) { // Ticket (Item)
+                    cost = (mode == 2) ? opt.getLumpNumTicket() : 1;
+                    if (cost <= 0) cost = 1; // Fallback
+                    deductTicket = cost;
+                } else if (pay == 3) { // Normal Jewel payment (Free + Paid)
+                    cost = (mode == 2) ? opt.getLumpPrice() : opt.getSinglePrice();
+                    if (user.getJewel() >= cost) { // getJewel() is Free Jewel
+                        deductFreeJewel = cost;
+                    } else {
+                        deductFreeJewel = user.getJewel();
+                        deductPaidJewel = cost - user.getJewel();
+                    }
+                } else if (pay == 4) { // Paid Jewel ONLY
+                    cost = (mode == 2) ? opt.getPaidLumpPrice() : opt.getPaidSinglePrice();
+                    if (cost <= 0) cost = (mode == 2) ? opt.getLumpPrice() : opt.getSinglePrice();
+                    deductPaidJewel = cost;
+                } else {
+                    cost = (mode == 2) ? opt.getLumpPrice() : opt.getSinglePrice();
+                    deductFreeJewel = cost;
+                }
+            }
+        }
+
+        if (deductTicket > 0 && ticketId > 0 && pay == 5) {
+            deductionSuccess = userService.deductItem(user.getUserId(), ticketId, deductTicket);
+            if (!deductionSuccess) {
+                log.warn("User does not have enough ticket_id={} amount={}", ticketId, deductTicket);
+                HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.BAD_REQUEST, null);
+                return;
+            }
+        } else if (deductFreeJewel > 0 || deductPaidJewel > 0) {
+            deductionSuccess = userService.deductJewels(user.getUserId(), deductFreeJewel, deductPaidJewel);
+            if (!deductionSuccess) {
+                log.warn("User does not have enough jewels. Need Free: {}, Paid: {}", deductFreeJewel, deductPaidJewel);
+                HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.BAD_REQUEST, new byte[0]);
+                return;
             }
         }
 
@@ -85,6 +126,9 @@ public class GachaRoutes extends BaseRoute {
         } catch (Exception e) {
             log.error("Failed to insert cards and logs", e);
         }
+
+        // Reload user from DB to reflect the newly deducted coin and jewel balances
+        user = userService.findById(user.getUserId());
             
         resultBuilder.setStoredData(new com.emu.tqqserver.game.user.StoredDataService().build(user));
             
