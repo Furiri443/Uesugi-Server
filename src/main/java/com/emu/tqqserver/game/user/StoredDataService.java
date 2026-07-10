@@ -289,9 +289,6 @@ public class StoredDataService {
                             .setCardId(card.getCardId())
                             .build());
                 }
-                
-                builder.addAllItem(userService.getItems(user.getUserId()));
-
                 java.util.Collection<com.emu.tqqserver.data.resources.GroupPhotoDef> groupPhotos = com.emu.tqqserver.data.GameData.getGroupPhotoDataTable().values();
                 for (com.emu.tqqserver.data.resources.GroupPhotoDef def : groupPhotos) {
                     builder.addGroupPhoto(com.emu.tqqserver.proto.pkg_pmaster.GroupPhoto.newBuilder()

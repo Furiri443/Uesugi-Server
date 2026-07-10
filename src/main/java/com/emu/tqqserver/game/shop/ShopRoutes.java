@@ -183,8 +183,25 @@ public class ShopRoutes extends BaseRoute {
         }
 
         StoredDataService storedDataService = new StoredDataService();
+        com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(me).toBuilder();
+        
+        // Add purchased IDs and fake ShopStock to prevent UI crash
+        for (Map.Entry<Integer, Integer> entry : buyMap.entrySet()) {
+            int shopId = entry.getKey();
+            int qty = entry.getValue();
+            
+            com.emu.tqqserver.proto.pkg_pmisc.ShopStock stock = com.emu.tqqserver.proto.pkg_pmisc.ShopStock.newBuilder()
+                .setUid(1)
+                .setShopId(shopId)
+                .setPurchaseNum(qty)
+                .setPurchaseTotal(qty)
+                .setLastPurchaseAt((int)(System.currentTimeMillis() / 1000))
+                .build();
+            sdBuilder.addShopStock(stock);
+        }
+
         ShopResult.Builder builder = ShopResult.newBuilder()
-                .setStoredData(storedDataService.build(me));
+                .setStoredData(sdBuilder.build());
                 
         // Add purchased IDs to the result
         for (Map.Entry<Integer, Integer> entry : buyMap.entrySet()) {
@@ -217,6 +234,13 @@ public class ShopRoutes extends BaseRoute {
         me = userService.findById(me.getUserId());
         com.emu.tqqserver.proto.pkg_proto.ShopResult.Builder builder = com.emu.tqqserver.proto.pkg_proto.ShopResult.newBuilder();
         builder.setStoredData(new StoredDataService().build(me));
+        
+        // Prevent infinite loop by returning some IDs indicating the lineup was updated
+        builder.addId(100);
+        builder.addId(101);
+        builder.addId(102);
+        builder.addId(103);
+        
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, builder.build().toByteArray());
     }
     @Route("/shop/buy")

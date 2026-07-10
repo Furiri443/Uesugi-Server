@@ -88,6 +88,7 @@ public class DatabaseManager {
 
             // Create many-to-many lookup tables
             stmt.execute(SQL_CREATE_USER_COOKING);
+            stmt.execute(SQL_CREATE_USER_HOME_ACTORS);
             stmt.execute(SQL_CREATE_USER_FRIENDS);
             stmt.execute(SQL_CREATE_USER_BLOCKS);
             stmt.execute(SQL_CREATE_USER_GACHA_HISTORY);
@@ -339,8 +340,8 @@ public class DatabaseManager {
         )
         """;
 
-    // ── Friends ───────────────────────────────────────────────────────────────
-    private static final String SQL_CREATE_USER_FRIENDS = """
+    // ── Home Actors ───────────────────────────────────────────────────────────
+    private static final String SQL_CREATE_USER_HOME_ACTORS = """
         CREATE TABLE IF NOT EXISTS user_home_actors (
             user_id       INTEGER NOT NULL,
             character_id  INTEGER NOT NULL,
@@ -349,8 +350,11 @@ public class DatabaseManager {
             position      INTEGER NOT NULL,
             PRIMARY KEY (user_id, character_id),
             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-        );
+        )
+        """;
 
+    // ── Friends ───────────────────────────────────────────────────────────────
+    private static final String SQL_CREATE_USER_FRIENDS = """
         CREATE TABLE IF NOT EXISTS user_friends (
             user_id         INTEGER NOT NULL REFERENCES users(user_id),
             friend_id       INTEGER NOT NULL REFERENCES users(user_id),

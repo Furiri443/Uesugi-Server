@@ -240,6 +240,8 @@ public class UserService {
                 try(java.sql.PreparedStatement ps = conn.prepareStatement("DELETE FROM " + t + " WHERE user_id = ?")) {
                     ps.setLong(1, userId);
                     ps.executeUpdate();
+                } catch (Exception ex) {
+                    // Ignore missing table errors
                 }
             }
         } catch(Exception e) {
