@@ -352,7 +352,7 @@ message FortunePuzzleResult {
 }
 
 message PuzzleCard {
-  pkg_pmaster.Card card = 2;
+  pkg_puser.Card card = 2;
   int32 base_exp = 3;
   int32 vip_exp = 4;
   repeated string bonus = 5;

@@ -56,7 +56,11 @@ public class PuzzleRoutes extends BaseRoute {
         // Update stored data with the new PUID
         com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
         if (pSession != null) {
-            sdBuilder.setPuzzle(com.emu.tqqserver.proto.pkg_puser.Puzzle.newBuilder().setPuid(pSession.puid).build());
+            sdBuilder.setPuzzle(com.emu.tqqserver.proto.pkg_puser.Puzzle.newBuilder()
+                .setPuid(pSession.puid)
+                .setStageId(stageId)
+                .setStatus(1)
+                .build());
         }
 
         // Build a mock helper list user to show on screen
@@ -140,8 +144,26 @@ public class PuzzleRoutes extends BaseRoute {
         List<com.emu.tqqserver.proto.pkg_proto.PuzzleCard> puzzleCards = new java.util.ArrayList<>();
         for (int i = 0; i < Math.min(5, cards.size()); i++) {
             com.emu.tqqserver.game.user.CardEntity c = cards.get(i);
+            int propertyId = c.getCardId() * 10 + 1;
+            com.emu.tqqserver.proto.pkg_puser.Card puserCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                .setId(c.getId())
+                .setUid(userId.intValue())
+                .setCardId(c.getCardId())
+                .setCardPropertyId(propertyId)
+                .setCardPropertyId2(propertyId)
+                .setExp(c.getExp())
+                .setLevel(c.getLevel())
+                .setLevelAwake(0)
+                .setActiveSkillLevel(Math.max(1, c.getActiveSkillLevel()))
+                .setPassiveSkillLevel1(Math.max(1, c.getActiveSkillLevel()))
+                .setPassiveSkillLevel2(Math.max(1, c.getActiveSkillLevel()))
+                .setPassiveSkillLevel3(Math.max(1, c.getActiveSkillLevel()))
+                .setLimitbreakRank(c.getLimitbreakRank())
+                .setAwakePriority(0)
+                .build();
+
             puzzleCards.add(com.emu.tqqserver.proto.pkg_proto.PuzzleCard.newBuilder()
-                .setCard(cardService.mergeToMasterCard(c))
+                .setCard(puserCard)
                 .setBaseExp(50)
                 .build());
         }
@@ -149,6 +171,7 @@ public class PuzzleRoutes extends BaseRoute {
         // Clear the PUID in StoredData so client knows puzzle ended
         com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
         sdBuilder.clearPuzzle();
+        sdBuilder.addClear("puzzle");
 
         com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
             .setId(1823880390)
@@ -157,6 +180,7 @@ public class PuzzleRoutes extends BaseRoute {
             .setCardPropertyId(106511)
             .setCardPropertyId2(106511)
             .setLevel(50)
+            .setLevelAwake(0)
             .setActiveSkillLevel(5)
             .setPassiveSkillLevel1(5)
             .setPassiveSkillLevel2(5)
@@ -182,6 +206,11 @@ public class PuzzleRoutes extends BaseRoute {
             .setPlayerLevel(user.getRank() > 0 ? user.getRank() : 1)
             .setPlayerExp(user.getExp())
             .setHelper(helper)
+            .putRelationshipDearpoint(1, 10)
+            .putRelationshipDearpoint(2, 10)
+            .putRelationshipDearpoint(3, 10)
+            .putRelationshipDearpoint(4, 10)
+            .putRelationshipDearpoint(5, 10)
             .build();
             
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());

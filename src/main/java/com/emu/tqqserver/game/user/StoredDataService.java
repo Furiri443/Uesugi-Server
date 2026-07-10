@@ -318,6 +318,16 @@ public class StoredDataService {
                             .setComment(def.getComment())
                             .build());
                 }
+                // Add active puzzle session state if present
+                com.emu.tqqserver.game.puzzle.PuzzleService.PuzzleSession activeSession = new com.emu.tqqserver.game.puzzle.PuzzleService().getActiveSession(user.getUserId());
+                if (activeSession != null) {
+                    builder.setPuzzle(com.emu.tqqserver.proto.pkg_puser.Puzzle.newBuilder()
+                        .setPuid(activeSession.puid)
+                        .setStageId(activeSession.stageId)
+                        .setStatus(1)
+                        .build());
+                }
+
                 // Populate clear array with only the fields that are actually present
                 StoredData temp = builder.build();
                 temp.getAllFields().keySet().forEach(f -> builder.addClear(f.getName()));
