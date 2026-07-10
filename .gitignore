@@ -13,3 +13,10 @@ src/main/resources/.DS_Store
 src/main/resources/config.json
 src/test/java/com/emu/tqqserver/TestLoad.class
 cfr.jar
+card_20012.json
+check_card_props.py
+.gitignore
+hs_err_pid11000.log
+.gitignore
+replay_pid12236.log
+hs_err_pid12236.log
