@@ -23,7 +23,7 @@ public class ShopRoutes extends BaseRoute {
     @Route("/shop/products")
     public void products(ChannelHandlerContext ctx, FullHttpRequest req) {
         log.debug("shop/products");
-        IAPProductList list = IAPProductList.newBuilder().build();
+        IAPProductList list = IAPProductService.getInstance().getProductList();
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, list.toByteArray());
     }
 
