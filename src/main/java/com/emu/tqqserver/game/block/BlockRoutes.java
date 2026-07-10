@@ -73,8 +73,7 @@ public class BlockRoutes extends BaseRoute {
         com.emu.tqqserver.proto.pkg_puser.Card leader = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
             .setId(1823880390)
             .setUid((int) member.getUserId())
-            .setCardId(10651)
-            .build();
+            .setCardId(10651).setCardPropertyId(106511).setCardPropertyId2(106511).setLevel(50).setActiveSkillLevel(5).setPassiveSkillLevel1(5).setPassiveSkillLevel2(5).setPassiveSkillLevel3(5).build();
 
         return ListUser.newBuilder()
             .setUid((int) member.getUserId())
@@ -89,3 +88,5 @@ public class BlockRoutes extends BaseRoute {
             .build();
     }
 }
+
+

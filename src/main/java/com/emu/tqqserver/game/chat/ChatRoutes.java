@@ -31,7 +31,7 @@ public class ChatRoutes extends BaseRoute {
                 .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
                 .setPlayerTitleId(0)
                 .setPlayerTitleTargetId(0)
-                .setLeader(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder().setId(1823880390).setUid(1).setCardId(10651).build())
+                .setLeader(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder().setId(1823880390).setUid(1).setCardId(10651).setCardPropertyId(106511).setCardPropertyId2(106511).setLevel(50).setActiveSkillLevel(5).setPassiveSkillLevel1(5).setPassiveSkillLevel2(5).setPassiveSkillLevel3(5).build())
                 .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
                 .build();
 
@@ -153,3 +153,5 @@ public class ChatRoutes extends BaseRoute {
         }
     }
 }
+
+

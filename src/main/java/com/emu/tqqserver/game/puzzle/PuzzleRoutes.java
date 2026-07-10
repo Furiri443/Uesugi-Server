@@ -64,6 +64,13 @@ public class PuzzleRoutes extends BaseRoute {
             .setId(1823880390)
             .setUid(helperUid > 0 ? helperUid : 10003)
             .setCardId(10651)
+            .setCardPropertyId(106511)
+            .setCardPropertyId2(106511)
+            .setLevel(50)
+            .setActiveSkillLevel(5)
+            .setPassiveSkillLevel1(5)
+            .setPassiveSkillLevel2(5)
+            .setPassiveSkillLevel3(5)
             .build();
 
         ListUser helper = ListUser.newBuilder()
@@ -143,12 +150,38 @@ public class PuzzleRoutes extends BaseRoute {
         com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
         sdBuilder.clearPuzzle();
 
+        com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+            .setId(1823880390)
+            .setUid(10003)
+            .setCardId(10651)
+            .setCardPropertyId(106511)
+            .setCardPropertyId2(106511)
+            .setLevel(50)
+            .setActiveSkillLevel(5)
+            .setPassiveSkillLevel1(5)
+            .setPassiveSkillLevel2(5)
+            .setPassiveSkillLevel3(5)
+            .build();
+
+        ListUser helper = ListUser.newBuilder()
+            .setUid(10003)
+            .setLevel(75)
+            .setName("三玖ちゃん")
+            .setComment("助っ人です！よろしくね")
+            .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
+            .setLeader(leaderCard)
+            .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
+            .build();
+
         PuzzleResult response = PuzzleResult.newBuilder()
             .setStoredData(sdBuilder.build())
             .setNewRecord(true)
             .setScore(score)
             .addAllStageClearReward(rewards)
             .addAllUnit(puzzleCards)
+            .setPlayerLevel(user.getRank() > 0 ? user.getRank() : 1)
+            .setPlayerExp(user.getExp())
+            .setHelper(helper)
             .build();
             
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
@@ -233,6 +266,7 @@ public class PuzzleRoutes extends BaseRoute {
                 .setUid((int)u.getUserId())
                 .setCardId(10651)
                 .setCardPropertyId(106511)
+                .setCardPropertyId2(106511)
                 .setLevel(50)
                 .setLevelAwake(50)
                 .setLimitbreakRank(4)
@@ -240,6 +274,7 @@ public class PuzzleRoutes extends BaseRoute {
                 .setActiveSkillLevel(5)
                 .setPassiveSkillLevel1(5)
                 .setPassiveSkillLevel2(5)
+                .setPassiveSkillLevel3(5)
                 .setKirameki(0)
                 .setTokimeki(0)
                 .build();
@@ -269,12 +304,15 @@ public class PuzzleRoutes extends BaseRoute {
                 .setUid(1002)
                 .setCardId(10472)
                 .setCardPropertyId(104721)
+                .setCardPropertyId2(104721)
                 .setLevel(50)
                 .setLevelAwake(50)
                 .setLimitbreakRank(4)
                 .setAwakePriority(1)
                 .setActiveSkillLevel(5)
                 .setPassiveSkillLevel1(5)
+                .setPassiveSkillLevel2(5)
+                .setPassiveSkillLevel3(5)
                 .setKirameki(0)
                 .setTokimeki(0)
                 .build())

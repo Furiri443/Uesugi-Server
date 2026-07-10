@@ -112,15 +112,32 @@ public class StoredDataService {
                 com.emu.tqqserver.game.user.CardEntity leaderCardEntity = cardService.getUserCardsMap(user.getUserId()).get(mainCardId);
                 if (leaderCardEntity != null) {
                         int[] safeLeader = computeSafeExpAndLevel(leaderCardEntity.getCardId(), leaderCardEntity.getExp(), leaderCardEntity.getLevel());
+                        int leaderPropertyId = leaderCardEntity.getCardId() * 10 + 1;
                         leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                             .setId(leaderCardEntity.getId())
                             .setCardId(leaderCardEntity.getCardId())
+                            .setCardPropertyId(leaderPropertyId)
+                            .setCardPropertyId2(leaderPropertyId)
                             .setLevel(safeLeader[1])
                             .setExp(safeLeader[0])
                             .setLimitbreakRank(leaderCardEntity.getLimitbreakRank())
+                            .setActiveSkillLevel(Math.max(1, leaderCardEntity.getActiveSkillLevel()))
+                            .setPassiveSkillLevel1(Math.max(1, leaderCardEntity.getActiveSkillLevel()))
+                            .setPassiveSkillLevel2(Math.max(1, leaderCardEntity.getActiveSkillLevel()))
+                            .setPassiveSkillLevel3(Math.max(1, leaderCardEntity.getActiveSkillLevel()))
                             .build();
                 } else {
-                        leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder().setId(mainCardId).build();
+                        leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                            .setId(mainCardId)
+                            .setCardId(10651)
+                            .setCardPropertyId(106511)
+                            .setCardPropertyId2(106511)
+                            .setLevel(50)
+                            .setActiveSkillLevel(5)
+                            .setPassiveSkillLevel1(5)
+                            .setPassiveSkillLevel2(5)
+                            .setPassiveSkillLevel3(5)
+                            .build();
                 }
 
                 com.emu.tqqserver.proto.pkg_pmisc.FeatureTeamMember featureTeamMember = com.emu.tqqserver.proto.pkg_pmisc.FeatureTeamMember.newBuilder()
@@ -263,11 +280,14 @@ public class StoredDataService {
 
                 java.util.List<com.emu.tqqserver.game.user.CardEntity> userCards = userService.getUserCards(user.getUserId());
                 for (com.emu.tqqserver.game.user.CardEntity card : userCards) {
+                    int propertyId = card.getCardId() * 10 + 1;
                     int[] safe = computeSafeExpAndLevel(card.getCardId(), card.getExp(), card.getLevel());
                     builder.addCard(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                             .setId(card.getId())
                             .setUid((int) user.getUserId())
                             .setCardId(card.getCardId())
+                            .setCardPropertyId(propertyId)
+                            .setCardPropertyId2(propertyId)
                             .setExp(safe[0])
                             .setLevel(safe[1])
                             .setInterludeVoice1(1)
