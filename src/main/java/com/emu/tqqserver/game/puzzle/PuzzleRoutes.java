@@ -71,10 +71,15 @@ public class PuzzleRoutes extends BaseRoute {
             .setCardPropertyId(106511)
             .setCardPropertyId2(106511)
             .setLevel(50)
+            .setLevelAwake(50)
+            .setLimitbreakRank(4)
+            .setAwakePriority(1)
             .setActiveSkillLevel(5)
             .setPassiveSkillLevel1(5)
             .setPassiveSkillLevel2(5)
             .setPassiveSkillLevel3(5)
+            .setKirameki(0)
+            .setTokimeki(0)
             .build();
 
         ListUser helper = ListUser.newBuilder()
@@ -82,7 +87,10 @@ public class PuzzleRoutes extends BaseRoute {
             .setLevel(75)
             .setName(helperUid > 0 ? "Friend " + helperUid : "三玖ちゃん")
             .setComment("助っ人です！よろしくね")
+            .setPlayerTitleId(50701001)
+            .setPlayerTitleTargetId(1)
             .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
+            .setFriend("none")
             .setLeader(leaderCard)
             .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
             .build();
@@ -129,21 +137,78 @@ public class PuzzleRoutes extends BaseRoute {
         }
 
         PuzzleService.PuzzleSession pSession = puzzleService.getActiveSession(userId);
-        if (pSession != null && (uniqId == null || uniqId.isEmpty() || uniqId.equals(pSession.puid))) {
-            stageId = pSession.stageId;
-        }
+        stageId = pSession != null ? pSession.stageId : 1001;
+
+        boolean isNewRecord = false;
+        try {
+            java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
+            java.sql.PreparedStatement ps = conn.prepareStatement("SELECT best_score FROM user_stages WHERE user_id = ? AND stage_id = ?");
+            ps.setLong(1, user.getUserId());
+            ps.setInt(2, stageId);
+            java.sql.ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int oldBest = rs.getInt("best_score");
+                if (score > oldBest) isNewRecord = true;
+            } else {
+                isNewRecord = true;
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {}
 
         List<Goods> rewards = puzzleService.clearPuzzle(userId, stageId, score, clearType);
         
+        if (rewards.isEmpty()) {
+            rewards.add(com.emu.tqqserver.proto.pkg_proto.Goods.newBuilder()
+                .setCategory(1)
+                .setTargetId(1001)
+                .setQuantity(100)
+                .build());
+        }
+        
+        // Reload user to get updated exp/level from clearPuzzle
+        user = userService.findById(userId);
+        int playerLevel = user.getRank();
+        int playerExp = user.getExp();
         // Clear session
         puzzleService.clearSession(userId);
 
         com.emu.tqqserver.game.card.CardService cardService = new com.emu.tqqserver.game.card.CardService();
         List<com.emu.tqqserver.game.user.CardEntity> cards = cardService.getUserCards(userId);
         
+        com.emu.tqqserver.game.user.UnitDao unitDao = new com.emu.tqqserver.game.user.UnitDao();
+        List<com.emu.tqqserver.proto.pkg_puser.Unit> units = unitDao.getUnits(userId);
+        com.emu.tqqserver.proto.pkg_puser.Unit activeUnit = null;
+        for (com.emu.tqqserver.proto.pkg_puser.Unit u : units) {
+            if (u.getIdx() == 1) {
+                activeUnit = u;
+                break;
+            }
+        }
+        if (activeUnit == null && !units.isEmpty()) activeUnit = units.get(0);
+        
+        List<Long> activeCardIds = new java.util.ArrayList<>();
+        if (activeUnit != null) {
+            activeCardIds.add(activeUnit.getCardId1());
+            activeCardIds.add(activeUnit.getCardId2());
+            activeCardIds.add(activeUnit.getCardId3());
+            activeCardIds.add(activeUnit.getCardId4());
+            activeCardIds.add(activeUnit.getCardId5());
+        }
+
         List<com.emu.tqqserver.proto.pkg_proto.PuzzleCard> puzzleCards = new java.util.ArrayList<>();
-        for (int i = 0; i < Math.min(5, cards.size()); i++) {
-            com.emu.tqqserver.game.user.CardEntity c = cards.get(i);
+        for (Long cardId : activeCardIds) {
+            if (cardId <= 0) continue;
+            com.emu.tqqserver.game.user.CardEntity c = null;
+            for (com.emu.tqqserver.game.user.CardEntity entity : cards) {
+                if (entity.getId() == cardId) {
+                    c = entity;
+                    break;
+                }
+            }
+            if (c == null) continue;
+            
             int propertyId = c.getCardId() * 10 + 1;
             com.emu.tqqserver.proto.pkg_puser.Card puserCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                 .setId(c.getId())
@@ -164,14 +229,21 @@ public class PuzzleRoutes extends BaseRoute {
 
             puzzleCards.add(com.emu.tqqserver.proto.pkg_proto.PuzzleCard.newBuilder()
                 .setCard(puserCard)
-                .setBaseExp(50)
+                .setBaseExp(c.getExp())
+                .setRelationshipExp(10)
                 .build());
         }
+        
+        log.info("puzzleCards size: " + puzzleCards.size());
 
-        // Clear the PUID in StoredData so client knows puzzle ended
         com.emu.tqqserver.proto.pkg_proto.StoredData.Builder sdBuilder = storedDataService.build(user).toBuilder();
-        sdBuilder.clearPuzzle();
-        sdBuilder.addClear("puzzle");
+        if (pSession != null) {
+            sdBuilder.setPuzzle(com.emu.tqqserver.proto.pkg_puser.Puzzle.newBuilder()
+                .setPuid(pSession.puid)
+                .setStageId(stageId)
+                .setStatus(1)
+                .build());
+        }
 
         com.emu.tqqserver.proto.pkg_puser.Card leaderCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
             .setId(1823880390)
@@ -180,11 +252,15 @@ public class PuzzleRoutes extends BaseRoute {
             .setCardPropertyId(106511)
             .setCardPropertyId2(106511)
             .setLevel(50)
-            .setLevelAwake(0)
+            .setLevelAwake(50)
+            .setLimitbreakRank(4)
+            .setAwakePriority(1)
             .setActiveSkillLevel(5)
             .setPassiveSkillLevel1(5)
             .setPassiveSkillLevel2(5)
             .setPassiveSkillLevel3(5)
+            .setKirameki(0)
+            .setTokimeki(0)
             .build();
 
         ListUser helper = ListUser.newBuilder()
@@ -192,25 +268,36 @@ public class PuzzleRoutes extends BaseRoute {
             .setLevel(75)
             .setName("三玖ちゃん")
             .setComment("助っ人です！よろしくね")
+            .setPlayerTitleId(50701001)
+            .setPlayerTitleTargetId(1)
             .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
+            .setFriend("none")
             .setLeader(leaderCard)
             .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
             .build();
 
+        com.emu.tqqserver.proto.pkg_proto.EventPuzzleResult eventResult = com.emu.tqqserver.proto.pkg_proto.EventPuzzleResult.newBuilder()
+            .setTotalEp(0)
+            .setRank(0)
+            .build();
+
         PuzzleResult response = PuzzleResult.newBuilder()
             .setStoredData(sdBuilder.build())
-            .setNewRecord(true)
+            .setNewRecord(isNewRecord)
             .setScore(score)
             .addAllStageClearReward(rewards)
+            .addAllStageFirstClearReward(new java.util.ArrayList<>())
+            .addAllStageRankSReward(new java.util.ArrayList<>())
+            .addAllStageDropReward(new java.util.ArrayList<>())
+            .addAllChapterPerfectReward(new java.util.ArrayList<>())
+            .addAllChapterCompleteReward(new java.util.ArrayList<>())
             .addAllUnit(puzzleCards)
+            .addAllPuzzleTreasure(new java.util.ArrayList<>())
+            .addAllAppliedStageBoostCampaign(new java.util.ArrayList<>())
+            .addAllAppliedCampaign(new java.util.ArrayList<>())
             .setPlayerLevel(user.getRank() > 0 ? user.getRank() : 1)
             .setPlayerExp(user.getExp())
             .setHelper(helper)
-            .putRelationshipDearpoint(1, 10)
-            .putRelationshipDearpoint(2, 10)
-            .putRelationshipDearpoint(3, 10)
-            .putRelationshipDearpoint(4, 10)
-            .putRelationshipDearpoint(5, 10)
             .build();
             
         HttpApiHandler.sendProto(ctx, req, HttpResponseStatus.OK, response.toByteArray());
@@ -313,7 +400,10 @@ public class PuzzleRoutes extends BaseRoute {
                 .setLevel(u.getRank() > 0 ? u.getRank() : 1)
                 .setName(u.getNickname() != null ? u.getNickname() : "Player")
                 .setComment(u.getComment() != null ? u.getComment() : "Hello!")
+                .setPlayerTitleId(50701001)
+                .setPlayerTitleTargetId(1)
                 .setLastLoginTs((int) (System.currentTimeMillis() / 1000))
+                .setFriend("none")
                 .setLeader(leaderCard)
                 .setGreeting(com.emu.tqqserver.proto.pkg_puser.Greeting.getDefaultInstance())
                 .build();
@@ -326,6 +416,8 @@ public class PuzzleRoutes extends BaseRoute {
             .setLevel(100)
             .setName("Nakano Miku")
             .setComment("Matcha soda")
+            .setPlayerTitleId(50701001)
+            .setPlayerTitleTargetId(1)
             .setLastLoginTs((int)(System.currentTimeMillis() / 1000) - 3600)
             .setFriend("none")
             .setLeader(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()

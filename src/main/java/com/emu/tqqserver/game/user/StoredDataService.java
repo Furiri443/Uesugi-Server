@@ -74,15 +74,38 @@ public class StoredDataService {
                         members = memberDao.getMembers(user.getUserId());
                 }
 
-                com.emu.tqqserver.proto.pkg_puser.Stage.Builder stageBuilder = com.emu.tqqserver.proto.pkg_puser.Stage.newBuilder()
+                java.util.List<com.emu.tqqserver.proto.pkg_puser.Stage> userStages = new java.util.ArrayList<>();
+                String sqlStage = "SELECT stage_id, stars, best_score, clear_count, cleared_at FROM user_stages WHERE user_id = ?";
+                try (java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
+                     java.sql.PreparedStatement ps = conn.prepareStatement(sqlStage)) {
+                    ps.setLong(1, user.getUserId());
+                    try (java.sql.ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            userStages.add(com.emu.tqqserver.proto.pkg_puser.Stage.newBuilder()
                                 .setUid((int) user.getUserId())
-                                .setRank(3);
-                                
-                java.util.Collection<com.emu.tqqserver.data.resources.StageDef> stages = com.emu.tqqserver.data.GameData.getStageDataTable().values();
-                if (!stages.isEmpty()) {
-                        stageBuilder.setStageId(stages.iterator().next().getId());
-                } else {
-                        stageBuilder.setStageId(1);
+                                .setStageId(rs.getInt("stage_id"))
+                                .setRank(rs.getInt("stars"))
+                                .setScore(rs.getInt("best_score"))
+                                .setStatus(3)
+                                .build());
+                        }
+                    }
+                } catch (java.sql.SQLException e) {
+                    System.err.println("Failed to load user stages: " + e.getMessage());
+                }
+
+                if (userStages.isEmpty()) {
+                    com.emu.tqqserver.proto.pkg_puser.Stage.Builder stageBuilder = com.emu.tqqserver.proto.pkg_puser.Stage.newBuilder()
+                                    .setUid((int) user.getUserId())
+                                    .setRank(3);
+                                    
+                    java.util.Collection<com.emu.tqqserver.data.resources.StageDef> stages = com.emu.tqqserver.data.GameData.getStageDataTable().values();
+                    if (!stages.isEmpty()) {
+                            stageBuilder.setStageId(stages.iterator().next().getId());
+                    } else {
+                            stageBuilder.setStageId(1);
+                    }
+                    userStages.add(stageBuilder.build());
                 }
 
                 com.emu.tqqserver.proto.pkg_pmisc.Work work = com.emu.tqqserver.proto.pkg_pmisc.Work.newBuilder()
@@ -176,6 +199,21 @@ public class StoredDataService {
                 com.emu.tqqserver.game.home.HomeService homeService = new com.emu.tqqserver.game.home.HomeService();
                 java.util.List<com.emu.tqqserver.proto.pkg_puser.HomeActor> homeActors = homeService.getHomeActors(user.getUserId());
 
+                java.util.List<com.emu.tqqserver.proto.pkg_pmisc.MemberDearpoint> dearpoints = new java.util.ArrayList<>();
+                java.util.List<com.emu.tqqserver.proto.pkg_pmisc.MemberLikabilitypoint> likabilitypoints = new java.util.ArrayList<>();
+                for (com.emu.tqqserver.proto.pkg_puser.Member m : members) {
+                    dearpoints.add(com.emu.tqqserver.proto.pkg_pmisc.MemberDearpoint.newBuilder()
+                        .setUid(m.getUid())
+                        .setMemberId(m.getMemberId())
+                        .setDearpoint(m.getDearpoint())
+                        .build());
+                    likabilitypoints.add(com.emu.tqqserver.proto.pkg_pmisc.MemberLikabilitypoint.newBuilder()
+                        .setUid(m.getUid())
+                        .setMemberId(m.getMemberId())
+                        .setLikabilitypoint(m.getDearpoint()) // Use dearpoint or some dummy value
+                        .build());
+                }
+
                 StoredData.Builder builder = StoredData.newBuilder()
                                 .addClear("chapter_expire")
                                 .setUser(protoUser)
@@ -183,12 +221,35 @@ public class StoredDataService {
                                 .setCurrency(currency)
                                 .addAllUnit(units)
                                 .addAllMember(members)
-                                .addStage(stageBuilder.build())
+                                .addAllMemberDearpoint(dearpoints)
+                                .addAllMemberLikabilitypoint(likabilitypoints)
+                                .addAllStage(userStages)
                                 .setWork(work)
                                 .setMileage(mileage)
                                 .setFeatureTeamMember(featureTeamMember)
                                 .putFeatureTeamCreate(55, 1)
                                 .setOptions(options);
+
+                java.util.List<com.emu.tqqserver.game.user.CardEntity> cards = cardService.getUserCards(user.getUserId());
+                for (com.emu.tqqserver.game.user.CardEntity c : cards) {
+                    int propertyId = c.getCardId() * 10 + 1;
+                    builder.addCard(com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
+                        .setId(c.getId())
+                        .setUid((int) user.getUserId())
+                        .setCardId(c.getCardId())
+                        .setCardPropertyId(propertyId)
+                        .setCardPropertyId2(propertyId)
+                        .setExp(c.getExp())
+                        .setLevel(c.getLevel())
+                        .setLevelAwake(0)
+                        .setActiveSkillLevel(Math.max(1, c.getActiveSkillLevel()))
+                        .setPassiveSkillLevel1(Math.max(1, c.getActiveSkillLevel()))
+                        .setPassiveSkillLevel2(Math.max(1, c.getActiveSkillLevel()))
+                        .setPassiveSkillLevel3(Math.max(1, c.getActiveSkillLevel()))
+                        .setLimitbreakRank(c.getLimitbreakRank())
+                        .setAwakePriority(0)
+                        .build());
+                }
                                 
                 UserService userService = new UserService();
                 java.util.List<Integer> chapterIds = userService.getUnlockedChapters(user.getUserId());
