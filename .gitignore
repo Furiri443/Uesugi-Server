@@ -24,3 +24,7 @@ hs_err_pid4876.log
 hs_err_pid6528.log
 replay_pid6528.log
 hs_err_pid32944.log
+decode_pcap.py
+.gitignore
+out.json
+decoded_puzzle_clear.txt

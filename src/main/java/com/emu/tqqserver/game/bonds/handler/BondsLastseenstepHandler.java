@@ -1,16 +1,18 @@
-package com.emu.tqqserver.game.advertising;
+package com.emu.tqqserver.game.bonds.handler;
 
 import com.emu.tqqserver.annotation.Route;
 import com.emu.tqqserver.network.http.BaseRoute;
 import com.emu.tqqserver.network.http.HttpApiHandler;
-
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import com.emu.tqqserver.game.user.UserEntity;
 
-public class AdvertisingRoutes extends BaseRoute {
-    @Route("/advertising/view")
-    public void view(ChannelHandlerContext ctx, FullHttpRequest req) { log.debug("advertising/view"); sendNocontent(ctx, req); }
+@Route("/bonds/lastseenstep")
+public class BondsLastseenstepHandler extends BaseRoute {
+
+
+    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
+ log.debug("bonds/lastseenstep"); sendNocontent(ctx, req); 
+    }
 }

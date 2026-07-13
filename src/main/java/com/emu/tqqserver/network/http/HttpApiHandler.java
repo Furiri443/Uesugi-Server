@@ -1,11 +1,5 @@
 package com.emu.tqqserver.network.http;
 
-import com.emu.tqqserver.game.account.AccountRoutes;
-import com.emu.tqqserver.game.achievement.AchievementRoutes;
-import com.emu.tqqserver.game.advertising.AdvertisingRoutes;
-import com.emu.tqqserver.game.appointment.AppointmentRoutes;
-import com.emu.tqqserver.game.block.BlockRoutes;
-import com.emu.tqqserver.game.bonds.BondsRoutes;
 import com.emu.tqqserver.game.book.BookRoutes;
 import com.emu.tqqserver.game.card.CardRoutes;
 import com.emu.tqqserver.game.cardspecial.CardSpecialRoutes;
@@ -36,7 +30,6 @@ import com.emu.tqqserver.game.options.OptionsRoutes;
 import com.emu.tqqserver.game.photobooth.PhotoboothRoutes;
 import com.emu.tqqserver.game.practiceexam.PracticeExamRoutes;
 import com.emu.tqqserver.game.present.PresentRoutes;
-import com.emu.tqqserver.game.puzzle.PuzzleRoutes;
 import com.emu.tqqserver.game.quintupletgame.QuintupletGameRoutes;
 import com.emu.tqqserver.game.resource.ResourceRoutes;
 import com.emu.tqqserver.game.retryable.RetryableRoutes;
@@ -136,87 +129,64 @@ public class HttpApiHandler extends SimpleChannelInboundHandler<FullHttpRequest>
     }
 
     static {
-        Class<?>[] controllers = {
-            AccountRoutes.class,
-            AchievementRoutes.class,
-            AdvertisingRoutes.class,
-            AppointmentRoutes.class,
-            BlockRoutes.class,
-            BondsRoutes.class,
-            BookRoutes.class,
-            CardRoutes.class,
-            CardSpecialRoutes.class,
-            ChallengeRoutes.class,
-            ChapterRoutes.class,
-            ChatRoutes.class,
-            CollectionRoutes.class,
-            CookingRoutes.class,
-            EncoreRoutes.class,
-            FcmRoutes.class,
-            FeatureRoutes.class,
-            FriendRoutes.class,
-            GachaRoutes.class,
-            HomeRoutes.class,
-            ImageRoutes.class,
-            InvitationRoutes.class,
-            ItemRoutes.class,
-            LikabilityRoutes.class,
-            LogRoutes.class,
-            LotteryRoutes.class,
-            MasterRoutes.class,
-            MemberRoutes.class,
-            MileageRoutes.class,
-            MiniGameRoutes.class,
-            NewsRoutes.class,
-            NoticeRoutes.class,
-            OptionsRoutes.class,
-            PhotoboothRoutes.class,
-            PracticeExamRoutes.class,
-            PresentRoutes.class,
-            PuzzleRoutes.class,
-            QuintupletGameRoutes.class,
-            ResourceRoutes.class,
-            RetryableRoutes.class,
-            ReviewRoutes.class,
-            ShopRoutes.class,
-            SpecialContentRoutes.class,
-            StageRoutes.class,
-            StoryRoutes.class,
-            SynthesisRoutes.class,
-            TeamBattleRoutes.class,
-            TutorialRoutes.class,
-            UnitRoutes.class,
-            UnitSkillRoutes.class,
-            UserRoutes.class,
-            VrRoutes.class,
-            WorkRoutes.class
-        };
+        try {
+            org.reflections.Reflections reflections = new org.reflections.Reflections(
+                new org.reflections.util.ConfigurationBuilder()
+                    .forPackages("com.emu.tqqserver.game")
+                    .addScanners(
+                        org.reflections.scanners.Scanners.MethodsAnnotated,
+                        org.reflections.scanners.Scanners.TypesAnnotated
+                    )
+            );
 
-        for (Class<?> clazz : controllers) {
-            Object controllerInstance = null;
-            try {
-                controllerInstance = clazz.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                log.error("Failed to instantiate controller: {}", clazz.getName(), e);
-                continue;
+            // 1. Scan classes annotated with @Route
+            java.util.Set<Class<?>> routedClasses = reflections.getTypesAnnotatedWith(com.emu.tqqserver.annotation.Route.class);
+            for (Class<?> clazz : routedClasses) {
+                com.emu.tqqserver.annotation.Route[] routes = clazz.getAnnotationsByType(com.emu.tqqserver.annotation.Route.class);
+                Object instance = clazz.getDeclaredConstructor().newInstance();
+                
+                // Handlers must implement a handle(ctx, req) method
+                java.lang.reflect.Method handleMethod = clazz.getMethod("handle", ChannelHandlerContext.class, FullHttpRequest.class);
+                
+                for (com.emu.tqqserver.annotation.Route route : routes) {
+                    ROUTES.put(route.value(), (ctx, req) -> {
+                        try {
+                            handleMethod.invoke(instance, ctx, req);
+                        } catch (java.lang.reflect.InvocationTargetException e) {
+                            if (e.getCause() instanceof Exception) throw (Exception) e.getCause();
+                            throw new RuntimeException(e.getCause());
+                        }
+                    });
+                }
             }
-            final Object instance = controllerInstance;
 
-            for (java.lang.reflect.Method method : clazz.getDeclaredMethods()) {
+            // 2. Scan methods annotated with @Route (legacy format)
+            java.util.Set<java.lang.reflect.Method> routedMethods = reflections.getMethodsAnnotatedWith(com.emu.tqqserver.annotation.Route.class);
+            java.util.Map<Class<?>, Object> instanceCache = new java.util.HashMap<>();
+            for (java.lang.reflect.Method method : routedMethods) {
+                Class<?> clazz = method.getDeclaringClass();
+                // Skip if the class itself is already mapped as a Route Handler
+                if (routedClasses.contains(clazz)) continue;
+                
+                Object instance = instanceCache.computeIfAbsent(clazz, c -> {
+                    try { return c.getDeclaredConstructor().newInstance(); }
+                    catch (Exception e) { throw new RuntimeException(e); }
+                });
+
                 com.emu.tqqserver.annotation.Route[] routes = method.getAnnotationsByType(com.emu.tqqserver.annotation.Route.class);
                 for (com.emu.tqqserver.annotation.Route route : routes) {
                     ROUTES.put(route.value(), (ctx, req) -> {
                         try {
                             method.invoke(instance, ctx, req);
                         } catch (java.lang.reflect.InvocationTargetException e) {
-                            if (e.getCause() instanceof Exception) {
-                                throw (Exception) e.getCause();
-                            }
+                            if (e.getCause() instanceof Exception) throw (Exception) e.getCause();
                             throw new RuntimeException(e.getCause());
                         }
                     });
                 }
             }
+        } catch (Exception e) {
+            log.error("Failed to initialize routes via reflection", e);
         }
     }
 

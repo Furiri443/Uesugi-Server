@@ -142,4 +142,12 @@ public abstract class BaseRoute {
         log.warn("readTwoIntFields called. This relies on old protobuf parsing which is removed.");
         return new int[2];
     }
+
+    protected byte[] buildErrorResponse(int code, String message) {
+        return com.emu.tqqserver.proto.pkg_pcommon.Error.newBuilder()
+            .setCode(code)
+            .setMsg(message)
+            .setTs((int) (System.currentTimeMillis() / 1000))
+            .build().toByteArray();
+    }
 }
