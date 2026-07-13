@@ -1,0 +1,29 @@
+package com.emu.tqqserver.game.friend.handler;
+
+import com.emu.tqqserver.game.friend.FriendService;
+import com.emu.tqqserver.annotation.Route;
+import com.emu.tqqserver.network.http.BaseRoute;
+import com.emu.tqqserver.network.http.HttpApiHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import com.emu.tqqserver.proto.pkg_proto.RankListUser;
+import com.emu.tqqserver.proto.pkg_proto.ListUser;
+import com.emu.tqqserver.game.user.StoredDataService;
+import com.emu.tqqserver.game.user.UserEntity;
+import java.util.ArrayList;
+import java.util.List;
+
+@Route("/friend/profile/picture/timeline")
+public class FriendProfilePictureTimelineHandler extends BaseRoute {
+
+    private final StoredDataService storedDataService = new StoredDataService();
+    private final FriendService friendService = new FriendService();
+
+    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
+
+        log.debug("friend/profile/picture/timeline");
+        sendNocontent(ctx, req);
+    
+    }
+}
