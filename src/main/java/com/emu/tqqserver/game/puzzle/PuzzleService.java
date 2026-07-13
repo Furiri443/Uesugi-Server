@@ -149,6 +149,8 @@ public class PuzzleService {
                 .setCategory(type)
                 .setTargetId(targetId)
                 .setQuantity(quantity)
+                .setRewardId(r.getId())
+                .setRewardSeqId(r.getSeqId())
                 .build());
 
             if (type == 1 && targetId == 1001) {

@@ -76,13 +76,7 @@ public class PuzzleClearHandler extends BaseRoute {
 
         List<Goods> rewards = puzzleService.clearPuzzle(userId, stageId, score, clearType);
         
-        if (rewards.isEmpty()) {
-            rewards.add(com.emu.tqqserver.proto.pkg_proto.Goods.newBuilder()
-                .setCategory(1)
-                .setTargetId(1001)
-                .setQuantity(100)
-                .build());
-        }
+        // Fallback removed to prevent client NullReferenceException on empty reward_id
         
         // Reload user to get updated exp/level from clearPuzzle
         user = userService.findById(userId);
