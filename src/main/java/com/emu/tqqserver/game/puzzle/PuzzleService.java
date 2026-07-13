@@ -241,14 +241,18 @@ public class PuzzleService {
             }
 
             int newExp = currentExp + expGained;
-            // Level up threshold: level * 100 exp
-            int threshold = currentRank * 100;
             int newRank = currentRank;
 
-            while (newExp >= threshold) {
-                newExp -= threshold;
+            com.emu.tqqserver.data.resources.PlayerDef playerDef = com.emu.tqqserver.data.GameData.getPlayerDataTable().get(newRank);
+            while (playerDef != null && newExp >= playerDef.getExp()) {
+                // To prevent infinite loop on max level, check if exp required is 0 (or no next level)
+                if (playerDef.getExp() <= 0) {
+                    newExp = 0;
+                    break;
+                }
+                newExp -= playerDef.getExp();
                 newRank++;
-                threshold = newRank * 100;
+                playerDef = com.emu.tqqserver.data.GameData.getPlayerDataTable().get(newRank);
             }
 
             String updateSql = "UPDATE users SET rank = ?, exp = ? WHERE user_id = ?";

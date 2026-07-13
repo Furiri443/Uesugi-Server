@@ -133,6 +133,30 @@ public class PuzzleClearHandler extends BaseRoute {
             }
             if (c == null) continue;
             
+            int newExp = c.getExp() + cardExpReward;
+            int newLevel = c.getLevel();
+            com.emu.tqqserver.data.resources.CardDef cardDef = com.emu.tqqserver.data.GameData.getCardDataTable().get(c.getCardId());
+            if (cardDef != null) {
+                int levelGrowthId = cardDef.getLevelGrowthId();
+                for (com.emu.tqqserver.data.resources.LevelGrowthDef g : com.emu.tqqserver.data.GameData.getLevelGrowthDataTable().values()) {
+                    if (g.getId() == levelGrowthId && newExp >= g.getValue() && g.getLevel() > newLevel) {
+                        newLevel = g.getLevel();
+                    }
+                }
+            }
+            try {
+                java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
+                java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE user_cards SET exp = ?, level = ? WHERE id = ?");
+                ps.setInt(1, newExp);
+                ps.setInt(2, newLevel);
+                ps.setLong(3, c.getId());
+                ps.executeUpdate();
+                ps.close();
+                conn.close();
+            } catch (Exception e) {
+                log.error("Failed to update card exp", e);
+            }
+
             int propertyId = c.getCardId() * 10 + 1;
             com.emu.tqqserver.proto.pkg_puser.Card puserCard = com.emu.tqqserver.proto.pkg_puser.Card.newBuilder()
                 .setId(c.getId())
@@ -140,7 +164,7 @@ public class PuzzleClearHandler extends BaseRoute {
                 .setCardId(c.getCardId())
                 .setCardPropertyId(propertyId)
                 .setCardPropertyId2(propertyId)
-                .setExp(c.getExp())
+                .setExp(c.getExp()) // Send old exp as per client design so it can animate the exp bar
                 .setLevel(c.getLevel())
                 .setLevelAwake(0)
                 .setActiveSkillLevel(Math.max(1, c.getActiveSkillLevel()))

@@ -70,6 +70,6 @@ public class PlayerDef extends BaseDef {
 
     @Override
     public int getId() {
-        return 0;
+        return level;
     }
 }

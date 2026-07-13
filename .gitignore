@@ -28,3 +28,4 @@ decode_pcap.py
 .gitignore
 out.json
 decoded_puzzle_clear.txt
+hs_err_pid15444.log
