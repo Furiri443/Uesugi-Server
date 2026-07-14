@@ -23,6 +23,8 @@ public class ServerConfig {
     private String dbPath          = "gotopazu.db";
     private String cdnDir          = "assets_cdn";
     private String resourceListDir = "gotopazu";
+    private String sqliteTmpDir    = "./data/tmp";
+    private String assetUrlPrefix  = "assets-cancer";
 
     // Public constructor for Jackson
     public ServerConfig() {}
@@ -32,16 +34,23 @@ public class ServerConfig {
         
         // 1. Try to load from config.json
         File configFile = new File("config.json");
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT);
+
         if (configFile.exists() && configFile.isFile()) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
                 cfg = mapper.readValue(configFile, ServerConfig.class);
                 log.info("Loaded configuration from config.json");
             } catch (Exception e) {
                 log.error("Failed to parse config.json, using defaults", e);
             }
         } else {
-            log.info("No config.json found, using defaults");
+            log.info("No config.json found, creating one with defaults");
+            try {
+                mapper.writeValue(configFile, cfg);
+            } catch (Exception e) {
+                log.error("Failed to create config.json", e);
+            }
         }
 
         // 2. Env overrides
@@ -51,6 +60,8 @@ public class ServerConfig {
         if ((v = System.getenv("GOTOPAZU_DB_PATH"))      != null) cfg.dbPath          = v;
         if ((v = System.getenv("GOTOPAZU_CDN_DIR"))      != null) cfg.cdnDir          = v;
         if ((v = System.getenv("GOTOPAZU_RESOURCE_DIR")) != null) cfg.resourceListDir = v;
+        if ((v = System.getenv("GOTOPAZU_SQLITE_TMP"))   != null) cfg.sqliteTmpDir    = v;
+        if ((v = System.getenv("GOTOPAZU_ASSET_PREFIX")) != null) cfg.assetUrlPrefix  = v;
 
         // 3. CLI args (highest priority)
         for (int i = 0; i < args.length; i++) {
@@ -83,6 +94,12 @@ public class ServerConfig {
     
     public String getResourceListDir() { return resourceListDir; }
     public void setResourceListDir(String resourceListDir) { this.resourceListDir = resourceListDir; }
+
+    public String getSqliteTmpDir() { return sqliteTmpDir; }
+    public void setSqliteTmpDir(String sqliteTmpDir) { this.sqliteTmpDir = sqliteTmpDir; }
+
+    public String getAssetUrlPrefix() { return assetUrlPrefix; }
+    public void setAssetUrlPrefix(String assetUrlPrefix) { this.assetUrlPrefix = assetUrlPrefix; }
 
     // Legacy getters
     public int getApiPort()  { return port; }

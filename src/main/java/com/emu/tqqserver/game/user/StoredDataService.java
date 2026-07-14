@@ -87,6 +87,8 @@ public class StoredDataService {
                                 .setRank(rs.getInt("stars"))
                                 .setScore(rs.getInt("best_score"))
                                 .setStatus(3)
+                                .setUpdatedAt(rs.getInt("cleared_at"))
+                                .setUnitIdx(1) // Default unit index
                                 .build());
                         }
                     }

@@ -83,7 +83,8 @@ public class ResourceListAndroidHandler extends BaseRoute {
         if (host == null || host.isEmpty()) {
             host = "127.0.0.1:8080";
         }
-        response.headers().set("X-Enish-Resource-Url", "http://" + host + "/assets-cancer/Resources");
+        String assetPrefix = System.getProperty("gotopazu.asset.url.prefix", "assets-cancer");
+        response.headers().set("X-Enish-Resource-Url", "http://" + host + "/" + assetPrefix + "/Resources");
 
         HttpApiHandler.addCorsHeaders(response);
         HttpApiHandler.writeAndFlush(ctx, req, response);

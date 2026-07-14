@@ -172,8 +172,9 @@ public class HttpApiHandler extends SimpleChannelInboundHandler<FullHttpRequest>
         }
 
         // Asset CDN: /assets-cancer/Resources/<bundle_name>
-        if (uri.contains("/assets-cancer/")) {
-            String assetUri = uri.substring(uri.indexOf("/assets-cancer/"));
+        String assetPrefix = System.getProperty("gotopazu.asset.url.prefix", "assets-cancer");
+        if (uri.contains("/" + assetPrefix + "/")) {
+            String assetUri = uri.substring(uri.indexOf("/" + assetPrefix + "/"));
             serveAsset(ctx, request, assetUri);
             return;
         }
@@ -235,9 +236,9 @@ public class HttpApiHandler extends SimpleChannelInboundHandler<FullHttpRequest>
     // because assets_cdn stores files by hash regardless of platform.
 
     private void serveAsset(ChannelHandlerContext ctx, FullHttpRequest req, String uri) {
-        // Strip prefix: /assets-cancer/Resources/{platform}/{hash}
-        // Split path segments after /assets-cancer/Resources/
-        String afterPrefix = uri.replaceFirst("^/assets-cancer/Resources/?", "");
+        String assetPrefix = System.getProperty("gotopazu.asset.url.prefix", "assets-cancer");
+        String prefixRegex = "^/" + assetPrefix + "/Resources/?";
+        String afterPrefix = uri.replaceFirst(prefixRegex, "");
         // afterPrefix = "android/2003e7d..." or "ios/2003e7d..." or "share/2003e7d..."
 
         String hash;

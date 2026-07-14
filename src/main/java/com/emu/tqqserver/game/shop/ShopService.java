@@ -13,7 +13,9 @@ import java.util.HashMap;
 
 public class ShopService {
     private static final Logger log = LoggerFactory.getLogger(ShopService.class);
-    private static final String MASTER_DIR = "gotopazu/master/";
+    private static String getMasterDir() {
+        return com.emu.tqqserver.game.GameContext.getInstance().getConfig().getResourceListDir() + "/master/";
+    }
 
     private static List<Map<String, Object>> shopData = new ArrayList<>();
     private static List<Map<String, Object>> rewardData = new ArrayList<>();
@@ -28,7 +30,7 @@ public class ShopService {
         try {
             ObjectMapper mapper = new ObjectMapper();
             
-            File shopFile = new File(MASTER_DIR + "shop.json");
+            File shopFile = new File(getMasterDir() + "shop.json");
             if (shopFile.exists()) {
                 shopData = mapper.readValue(shopFile, new TypeReference<List<Map<String, Object>>>() {});
                 for (Map<String, Object> item : shopData) {
@@ -39,7 +41,7 @@ public class ShopService {
                 log.info("Loaded {} shop items", shopData.size());
             }
 
-            File rewardFile = new File(MASTER_DIR + "reward.json");
+            File rewardFile = new File(getMasterDir() + "reward.json");
             if (rewardFile.exists()) {
                 rewardData = mapper.readValue(rewardFile, new TypeReference<List<Map<String, Object>>>() {});
                 for (Map<String, Object> r : rewardData) {

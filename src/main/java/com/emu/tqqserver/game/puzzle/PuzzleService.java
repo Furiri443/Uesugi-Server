@@ -241,16 +241,15 @@ public class PuzzleService {
             }
 
             int newExp = currentExp + expGained;
-            int newRank = currentRank;
+            int newRank = 1;
+            int cumulativeExp = 0;
 
             com.emu.tqqserver.data.resources.PlayerDef playerDef = com.emu.tqqserver.data.GameData.getPlayerDataTable().get(newRank);
-            while (playerDef != null && newExp >= playerDef.getExp()) {
-                // To prevent infinite loop on max level, check if exp required is 0 (or no next level)
+            while (playerDef != null && newExp >= cumulativeExp + playerDef.getExp()) {
                 if (playerDef.getExp() <= 0) {
-                    newExp = 0;
                     break;
                 }
-                newExp -= playerDef.getExp();
+                cumulativeExp += playerDef.getExp();
                 newRank++;
                 playerDef = com.emu.tqqserver.data.GameData.getPlayerDataTable().get(newRank);
             }

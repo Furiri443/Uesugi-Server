@@ -47,13 +47,20 @@ public class GotopazuServer {
 
         System.setProperty("gotopazu.resource.list.dir", config.getResourceListDir());
         System.setProperty("gotopazu.cdn.dir", config.getCdnDir());
+        System.setProperty("gotopazu.asset.url.prefix", config.getAssetUrlPrefix());
         log.info("Loaded server configuration.");
 
         // Load puzzle stage data
-        com.emu.tqqserver.data.ResourceLoader.setResourceDir("gotopazu");
+        com.emu.tqqserver.data.ResourceLoader.setResourceDir(config.getResourceListDir());
         com.emu.tqqserver.data.ResourceLoader.loadAll();
 
         // 2. Initialize Database
+        java.io.File sqliteTmp = new java.io.File(config.getSqliteTmpDir());
+        if (!sqliteTmp.exists()) {
+            sqliteTmp.mkdirs();
+        }
+        System.setProperty("org.sqlite.tmpdir", sqliteTmp.getAbsolutePath());
+
         DatabaseManager.getInstance().initialize(config.getDbPath());
         MasterDataService.initialize(config.getResourceListDir());
         
