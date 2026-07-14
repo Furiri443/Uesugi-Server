@@ -104,17 +104,11 @@ public class ResourceLoader {
                     }
                     log.info("Loaded {} {}s from {}.", count, resourceClass.getSimpleName(), fileName);
 
-                    // Re-encode from GameData table and merge to Protobuf All.Builder in chunks to save memory
+                    // Re-encode from GameData table and merge to Protobuf All.Builder
                     if (table != null && table.values() != null) {
-                        java.util.List<?> list = new java.util.ArrayList<>(table.values());
-                        int chunkSize = 2000;
-                        for (int i = 0; i < list.size(); i += chunkSize) {
-                            int end = Math.min(list.size(), i + chunkSize);
-                            java.util.List<?> chunk = list.subList(i, end);
-                            String reencodedJson = JsonUtils.encode(chunk, true);
-                            String wrapped = "{\"" + category + "\":" + reencodedJson + "}";
-                            parser.merge(wrapped, allBuilder);
-                        }
+                        String reencodedJson = JsonUtils.encode(table.values(), true);
+                        String wrapped = "{\"" + category + "\":" + reencodedJson + "}";
+                        parser.merge(wrapped, allBuilder);
                         loadedProtoCount++;
                     }
                 } else if (fileName.equals("puzzle.json") || fileName.equals("reaction.json") || fileName.equals("text.json") || fileName.equals("adventure_resource.json")) {

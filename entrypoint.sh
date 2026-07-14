@@ -16,4 +16,4 @@ fi
 
 # Chạy server với giới hạn RAM (tránh OutOfMemory trên Render)
 echo "[Init] Đang khởi động UesugiServer..."
-exec java -Xms128m -Xmx350m -jar UesugiServer.jar
+exec java -jar UesugiServer.jar
