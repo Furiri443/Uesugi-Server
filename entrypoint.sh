@@ -14,6 +14,6 @@ else
     echo "[Init] Đã tìm thấy resource tại /app/gotopazu/master."
 fi
 
-# Chạy server
+# Chạy server với giới hạn RAM (tránh OutOfMemory trên Render)
 echo "[Init] Đang khởi động UesugiServer..."
-exec java -jar UesugiServer.jar
+exec java -Xms128m -Xmx350m -jar UesugiServer.jar
