@@ -68,7 +68,7 @@ public class FriendDao extends BaseDao {
     public boolean isBlocked(long userId, long targetId) {
         String sql = "SELECT 1 FROM user_blocks WHERE user_id = ? AND blocked_user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setLong(2, targetId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -83,7 +83,7 @@ public class FriendDao extends BaseDao {
     private List<Long> queryList(String sql, long id) {
         List<Long> list = new ArrayList<>();
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -98,7 +98,7 @@ public class FriendDao extends BaseDao {
 
     private void executeRelationUpdate(String sql, long id1, long id2) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, id1);
             ps.setLong(2, id2);
             ps.executeUpdate();

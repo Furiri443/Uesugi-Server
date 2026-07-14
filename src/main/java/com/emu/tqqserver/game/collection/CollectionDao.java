@@ -24,7 +24,7 @@ public class CollectionDao {
     public com.emu.tqqserver.proto.pkg_puser.Collection getCollection(long userId) {
         String sql = "SELECT bgm_id, view_count FROM user_collections WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -51,7 +51,7 @@ public class CollectionDao {
         String sql = "INSERT INTO user_collections (user_id, bgm_id, view_count) VALUES (?, ?, 0) " +
                      "ON CONFLICT(user_id) DO UPDATE SET bgm_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, bgmId);
             ps.setInt(3, bgmId);
@@ -65,7 +65,7 @@ public class CollectionDao {
         List<CollectionPage> pages = new ArrayList<>();
         String sql = "SELECT idx, title, layout_id, theme_id, transition_id, page_sort FROM user_collection_pages WHERE user_id = ? ORDER BY idx ASC";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -91,7 +91,7 @@ public class CollectionDao {
     private List<CollectionElement> getCollectionElements(Connection conn, long userId, int pageIdx) throws SQLException {
         List<CollectionElement> elements = new ArrayList<>();
         String sql = "SELECT element_index, element_id, element_type FROM user_collection_elements WHERE user_id = ? AND page_idx = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, pageIdx);
             try (ResultSet rs = ps.executeQuery()) {
@@ -112,11 +112,11 @@ public class CollectionDao {
             conn.setAutoCommit(false);
             try {
                 // Delete existing pages and elements
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM user_collection_pages WHERE user_id = ?")) {
+                try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "DELETE FROM user_collection_pages WHERE user_id = ?")) {
                     ps.setLong(1, userId);
                     ps.executeUpdate();
                 }
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM user_collection_elements WHERE user_id = ?")) {
+                try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "DELETE FROM user_collection_elements WHERE user_id = ?")) {
                     ps.setLong(1, userId);
                     ps.executeUpdate();
                 }
@@ -124,8 +124,8 @@ public class CollectionDao {
                 String sqlPage = "INSERT INTO user_collection_pages (user_id, idx, title, layout_id, theme_id, transition_id, page_sort) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 String sqlElem = "INSERT INTO user_collection_elements (user_id, page_idx, element_index, element_id, element_type) VALUES (?, ?, ?, ?, ?)";
                 
-                try (PreparedStatement psPage = conn.prepareStatement(sqlPage);
-                     PreparedStatement psElem = conn.prepareStatement(sqlElem)) {
+                try (PreparedStatement psPage = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sqlPage);
+                     PreparedStatement psElem = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sqlElem)) {
                     for (CollectionPage page : pages) {
                         psPage.setLong(1, userId);
                         psPage.setInt(2, page.getIdx());

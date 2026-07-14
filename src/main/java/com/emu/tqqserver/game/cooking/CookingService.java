@@ -35,7 +35,7 @@ public class CookingService {
     public CookingTray getTrayStatus(long userId, int trayId, long now) {
         String sql = "SELECT * FROM user_cooking WHERE user_id = ? AND tray_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, trayId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -99,7 +99,7 @@ public class CookingService {
 
         String sql = "INSERT OR REPLACE INTO user_cooking (user_id, tray_id, recipe_id, start_at, finish_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, trayId);
             ps.setInt(3, recipeId);
@@ -115,7 +115,7 @@ public class CookingService {
     public boolean clearCooking(long userId, int trayId) {
         String selectSql = "SELECT * FROM user_cooking WHERE user_id = ? AND tray_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection()) {
-            try (PreparedStatement psSel = conn.prepareStatement(selectSql)) {
+            try (PreparedStatement psSel = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, selectSql)) {
                 psSel.setLong(1, userId);
                 psSel.setInt(2, trayId);
                 try (ResultSet rs = psSel.executeQuery()) {
@@ -125,7 +125,7 @@ public class CookingService {
                         if (now >= finishAt) {
                             // Delete cooking row
                             String deleteSql = "DELETE FROM user_cooking WHERE user_id = ? AND tray_id = ?";
-                            try (PreparedStatement psDel = conn.prepareStatement(deleteSql)) {
+                            try (PreparedStatement psDel = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, deleteSql)) {
                                 psDel.setLong(1, userId);
                                 psDel.setInt(2, trayId);
                                 psDel.executeUpdate();

@@ -15,7 +15,7 @@ public class GachaDao extends BaseDao {
     public void logGacha(long userId, int gachaId, int cardId, int rarity) {
         String sql = "INSERT INTO gacha_log (user_id, gacha_id, card_id, rarity) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             ps.setInt(3, cardId);
@@ -29,7 +29,7 @@ public class GachaDao extends BaseDao {
     public com.emu.tqqserver.proto.pkg_pmisc.GachaHistory getGachaHistory(long userId, int gachaId) {
         String sql = "SELECT total_cnt, free_roll_used, limit_cnt FROM user_gacha_history WHERE user_id = ? AND gacha_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
@@ -57,7 +57,7 @@ public class GachaDao extends BaseDao {
     public int getPendingChoiceCount(long userId, int gachaId) {
         String sql = "SELECT pending_choice_cnt FROM user_gacha_history WHERE user_id = ? AND gacha_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
@@ -74,7 +74,7 @@ public class GachaDao extends BaseDao {
     public void incrementPendingChoiceCount(long userId, int gachaId) {
         String sql = "UPDATE user_gacha_history SET pending_choice_cnt = pending_choice_cnt + 1 WHERE user_id = ? AND gacha_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             ps.executeUpdate();
@@ -84,7 +84,7 @@ public class GachaDao extends BaseDao {
     public void decrementPendingChoiceCount(long userId, int gachaId) {
         String sql = "UPDATE user_gacha_history SET pending_choice_cnt = MAX(0, pending_choice_cnt - 1) WHERE user_id = ? AND gacha_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             ps.executeUpdate();
@@ -95,7 +95,7 @@ public class GachaDao extends BaseDao {
         String sql = "INSERT INTO user_gacha_history (user_id, gacha_id, total_cnt, limit_cnt, pending_choice_cnt) VALUES (?, ?, ?, ?, 0) " +
                      "ON CONFLICT(user_id, gacha_id) DO UPDATE SET total_cnt = total_cnt + ?, limit_cnt = limit_cnt + ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             ps.setInt(3, draws);
@@ -111,7 +111,7 @@ public class GachaDao extends BaseDao {
     public void resetLimitCount(long userId, int gachaId) {
         String sql = "UPDATE user_gacha_history SET limit_cnt = 0 WHERE user_id = ? AND gacha_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             ps.executeUpdate();
@@ -124,7 +124,7 @@ public class GachaDao extends BaseDao {
         String sql = "INSERT INTO user_gacha_history (user_id, gacha_id, free_roll_used) VALUES (?, ?, 1) " +
                      "ON CONFLICT(user_id, gacha_id) DO UPDATE SET free_roll_used = 1";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, gachaId);
             ps.executeUpdate();
@@ -137,7 +137,7 @@ public class GachaDao extends BaseDao {
         java.util.List<com.emu.tqqserver.proto.pkg_pmisc.GachaHistory> list = new java.util.ArrayList<>();
         String sql = "SELECT gacha_id, total_cnt, limit_cnt FROM user_gacha_history WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

@@ -59,7 +59,7 @@ public class PuzzleClearHandler extends BaseRoute {
         boolean isNewRecord = false;
         try {
             java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
-            java.sql.PreparedStatement ps = conn.prepareStatement("SELECT best_score FROM user_stages WHERE user_id = ? AND stage_id = ?");
+            java.sql.PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT best_score FROM user_stages WHERE user_id = ? AND stage_id = ?");
             ps.setLong(1, user.getUserId());
             ps.setInt(2, stageId);
             java.sql.ResultSet rs = ps.executeQuery();
@@ -146,7 +146,7 @@ public class PuzzleClearHandler extends BaseRoute {
             }
             try {
                 java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
-                java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE user_cards SET exp = ?, level = ? WHERE id = ?");
+                java.sql.PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "UPDATE user_cards SET exp = ?, level = ? WHERE id = ?");
                 ps.setInt(1, newExp);
                 ps.setInt(2, newLevel);
                 ps.setLong(3, c.getId());
@@ -237,7 +237,7 @@ public class PuzzleClearHandler extends BaseRoute {
         int bondsScore = 0;
         String sqlBonds = "SELECT SUM(likability) AS total FROM user_members WHERE user_id = ?";
         try (java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(sqlBonds)) {
+             java.sql.PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sqlBonds)) {
             ps.setLong(1, userId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

@@ -1,5 +1,6 @@
 package com.emu.tqqserver.server;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.io.File;
  * 2. Environment variables (GOTOPAZU_*)
  * 3. CLI args
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServerConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
@@ -21,6 +23,13 @@ public class ServerConfig {
     private String host            = "0.0.0.0";
     private int    port            = GotopazuServer.DEFAULT_PORT;
     private String dbPath          = "gotopazu.db";
+    private String dbType          = "sqlite"; // sqlite or mysql
+    private String dbHost          = "127.0.0.1";
+    private int    dbPort          = 3306;
+    private String dbName          = "gotopazu";
+    private String dbUser          = "root";
+    private String dbPass          = "";
+
     private String cdnDir          = "assets_cdn";
     private String resourceListDir = "gotopazu";
     private String sqliteTmpDir    = "./data/tmp";
@@ -41,6 +50,8 @@ public class ServerConfig {
             try {
                 cfg = mapper.readValue(configFile, ServerConfig.class);
                 log.info("Loaded configuration from config.json");
+                // Rewrite file to ensure any missing fields are generated with defaults
+                mapper.writeValue(configFile, cfg);
             } catch (Exception e) {
                 log.error("Failed to parse config.json, using defaults", e);
             }
@@ -57,7 +68,13 @@ public class ServerConfig {
         String v;
         if ((v = System.getenv("GOTOPAZU_HOST"))         != null) cfg.host            = v;
         if ((v = System.getenv("GOTOPAZU_PORT"))         != null) cfg.port            = Integer.parseInt(v);
+        if ((v = System.getenv("GOTOPAZU_DB_TYPE"))      != null) cfg.dbType          = v;
         if ((v = System.getenv("GOTOPAZU_DB_PATH"))      != null) cfg.dbPath          = v;
+        if ((v = System.getenv("GOTOPAZU_DB_HOST"))      != null) cfg.dbHost          = v;
+        if ((v = System.getenv("GOTOPAZU_DB_PORT"))      != null) cfg.dbPort          = Integer.parseInt(v);
+        if ((v = System.getenv("GOTOPAZU_DB_NAME"))      != null) cfg.dbName          = v;
+        if ((v = System.getenv("GOTOPAZU_DB_USER"))      != null) cfg.dbUser          = v;
+        if ((v = System.getenv("GOTOPAZU_DB_PASS"))      != null) cfg.dbPass          = v;
         if ((v = System.getenv("GOTOPAZU_CDN_DIR"))      != null) cfg.cdnDir          = v;
         if ((v = System.getenv("GOTOPAZU_RESOURCE_DIR")) != null) cfg.resourceListDir = v;
         if ((v = System.getenv("GOTOPAZU_SQLITE_TMP"))   != null) cfg.sqliteTmpDir    = v;
@@ -89,7 +106,25 @@ public class ServerConfig {
     public String getDbPath()          { return dbPath; }
     public void setDbPath(String dbPath) { this.dbPath = dbPath; }
     
-    public String getCdnDir()          { return cdnDir; }
+    public String getDbType() { return dbType; }
+    public void setDbType(String dbType) { this.dbType = dbType; }
+
+    public String getDbHost() { return dbHost; }
+    public void setDbHost(String dbHost) { this.dbHost = dbHost; }
+
+    public int getDbPort() { return dbPort; }
+    public void setDbPort(int dbPort) { this.dbPort = dbPort; }
+
+    public String getDbName() { return dbName; }
+    public void setDbName(String dbName) { this.dbName = dbName; }
+
+    public String getDbUser() { return dbUser; }
+    public void setDbUser(String dbUser) { this.dbUser = dbUser; }
+
+    public String getDbPass() { return dbPass; }
+    public void setDbPass(String dbPass) { this.dbPass = dbPass; }
+
+    public String getCdnDir() { return cdnDir; }
     public void setCdnDir(String cdnDir) { this.cdnDir = cdnDir; }
     
     public String getResourceListDir() { return resourceListDir; }

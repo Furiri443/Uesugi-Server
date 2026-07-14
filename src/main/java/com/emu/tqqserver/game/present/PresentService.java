@@ -25,7 +25,7 @@ public class PresentService {
         List<Present> list = new ArrayList<>();
         String sql = "SELECT * FROM user_presents WHERE user_id = ? AND received = 0";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -41,7 +41,7 @@ public class PresentService {
     public void addPresent(long userId, int category, int targetId, int quantity, String text) {
         String sql = "INSERT INTO user_presents (user_id, category, target_id, quantity, text, received) VALUES (?, ?, ?, ?, ?, 0)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, category);
             ps.setInt(3, targetId);
@@ -83,7 +83,7 @@ public class PresentService {
                 for (int presentId : presentIds) {
                     // Check if present exists and is unclaimed
                     String selectSql = "SELECT * FROM user_presents WHERE present_id = ? AND user_id = ? AND received = 0";
-                    try (PreparedStatement psSel = conn.prepareStatement(selectSql)) {
+                    try (PreparedStatement psSel = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, selectSql)) {
                         psSel.setInt(1, presentId);
                         psSel.setLong(2, userId);
                         try (ResultSet rs = psSel.executeQuery()) {
@@ -97,7 +97,7 @@ public class PresentService {
 
                                 // Update present received status
                                 String updateSql = "UPDATE user_presents SET received = 1 WHERE present_id = ?";
-                                try (PreparedStatement psUpd = conn.prepareStatement(updateSql)) {
+                                try (PreparedStatement psUpd = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, updateSql)) {
                                     psUpd.setInt(1, presentId);
                                     psUpd.executeUpdate();
                                 }
@@ -131,7 +131,7 @@ public class PresentService {
         if (category == 1) {
             // Coins
             String sql = "UPDATE users SET coin = coin + ? WHERE user_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
                 ps.setInt(1, quantity);
                 ps.setLong(2, userId);
                 ps.executeUpdate();
@@ -139,7 +139,7 @@ public class PresentService {
         } else if (category == 2) {
             // Jewels/Ruby
             String sql = "UPDATE users SET jewel = jewel + ? WHERE user_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
                 ps.setInt(1, quantity);
                 ps.setLong(2, userId);
                 ps.executeUpdate();
@@ -147,7 +147,7 @@ public class PresentService {
         } else if (category == 5) {
             // Pay Jewels
             String sql = "UPDATE users SET pay_jewel = pay_jewel + ? WHERE user_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
                 ps.setInt(1, quantity);
                 ps.setLong(2, userId);
                 ps.executeUpdate();
@@ -155,7 +155,7 @@ public class PresentService {
         } else if (category == 3) {
             // Cards
             String sql = "INSERT INTO user_cards (user_id, card_id) VALUES (?, ?)";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
                 ps.setLong(1, userId);
                 ps.setInt(2, targetId);
                 ps.executeUpdate();
@@ -164,7 +164,7 @@ public class PresentService {
             // Items
             String sql = "INSERT INTO user_items (user_id, item_id, quantity) VALUES (?, ?, ?) " +
                          "ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + EXCLUDED.quantity";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
                 ps.setLong(1, userId);
                 ps.setInt(2, targetId);
                 ps.setInt(3, quantity);

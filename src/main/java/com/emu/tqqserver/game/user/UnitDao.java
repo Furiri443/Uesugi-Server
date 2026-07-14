@@ -18,7 +18,7 @@ public class UnitDao extends BaseDao {
 
     public void createDefaultUnit(long userId, List<Integer> defaultUnitCards, List<CardEntity> userCards) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "INSERT INTO user_units (user_id, idx, unit_name, member1, member2, member3, member4, member5, card1, card2, card3, card4, card5) " +
                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 
@@ -51,7 +51,7 @@ public class UnitDao extends BaseDao {
     /** Save or update a unit */
     public void saveUnit(long userId, int idx, String name, int[] members, long[] cards) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "INSERT OR REPLACE INTO user_units (user_id, idx, unit_name, member1, member2, member3, member4, member5, card1, card2, card3, card4, card5) " +
                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 
@@ -71,7 +71,7 @@ public class UnitDao extends BaseDao {
     public List<Unit> getUnits(long userId) {
         List<Unit> units = new ArrayList<>();
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM user_units WHERE user_id = ? ORDER BY idx ASC")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT * FROM user_units WHERE user_id = ? ORDER BY idx ASC")) {
 
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {

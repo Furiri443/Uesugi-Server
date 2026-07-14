@@ -77,7 +77,7 @@ public class StoredDataService {
                 java.util.List<com.emu.tqqserver.proto.pkg_puser.Stage> userStages = new java.util.ArrayList<>();
                 String sqlStage = "SELECT stage_id, stars, best_score, clear_count, cleared_at FROM user_stages WHERE user_id = ?";
                 try (java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection();
-                     java.sql.PreparedStatement ps = conn.prepareStatement(sqlStage)) {
+                     java.sql.PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sqlStage)) {
                     ps.setLong(1, user.getUserId());
                     try (java.sql.ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {

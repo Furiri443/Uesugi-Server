@@ -18,7 +18,7 @@ public class UserDao extends BaseDao {
     public void addFuncTutorial(long userId, int tutorialId) {
         String sql = "INSERT OR IGNORE INTO user_functutorials (user_id, tutorial_id) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, tutorialId);
             ps.executeUpdate();
@@ -31,7 +31,7 @@ public class UserDao extends BaseDao {
         java.util.List<Integer> list = new java.util.ArrayList<>();
         String sql = "SELECT tutorial_id FROM user_functutorials WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -47,7 +47,7 @@ public class UserDao extends BaseDao {
     public void addHomeBackground(long userId, int bgId) {
         String sql = "INSERT OR IGNORE INTO user_home_backgrounds (user_id, bg_id) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, bgId);
             ps.executeUpdate();
@@ -60,7 +60,7 @@ public class UserDao extends BaseDao {
         java.util.List<Integer> list = new java.util.ArrayList<>();
         String sql = "SELECT bg_id FROM user_home_backgrounds WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -76,7 +76,7 @@ public class UserDao extends BaseDao {
     public void addClothes(long userId, int clothesId) {
         String sql = "INSERT OR IGNORE INTO user_clothes (user_id, clothes_id) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, clothesId);
             ps.executeUpdate();
@@ -89,7 +89,7 @@ public class UserDao extends BaseDao {
         java.util.List<Integer> list = new java.util.ArrayList<>();
         String sql = "SELECT clothes_id FROM user_clothes WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -104,7 +104,7 @@ public class UserDao extends BaseDao {
 
     public UserEntity findById(long userId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE user_id = ?")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT * FROM users WHERE user_id = ?")) {
             ps.setLong(1, userId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs, false);
@@ -116,7 +116,7 @@ public class UserDao extends BaseDao {
 
     public UserEntity findByDeviceId(String deviceId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE device_id = ? AND platform_type = 'guest'")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT * FROM users WHERE device_id = ? AND platform_type = 'guest'")) {
             ps.setString(1, deviceId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapRow(rs, false);
@@ -129,7 +129,7 @@ public class UserDao extends BaseDao {
     public List<UserEntity> getAllUsers() {
         List<UserEntity> users = new ArrayList<>();
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM users")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT * FROM users")) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 users.add(mapRow(rs, false));
@@ -142,7 +142,7 @@ public class UserDao extends BaseDao {
 
     public void saveUser(UserEntity user) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "INSERT OR REPLACE INTO users (user_id, nickname, comment, rank, exp, jewel, pay_jewel, coin, tutorial_step, profile_background_id, home_background_id, player_title_id, player_title_target_id, daily_reward_received_at, created_at, updated_at) " +
                              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT created_at FROM users WHERE user_id = ?), strftime('%s','now')), strftime('%s','now'))")) {
             ps.setLong(1, user.getUserId());
@@ -168,7 +168,7 @@ public class UserDao extends BaseDao {
 
     public UserEntity create(String platformType, String platformId, String deviceId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "INSERT INTO users (platform_type, platform_id, device_id) VALUES (?, ?, ?)",
                      Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, platformType);
@@ -203,7 +203,7 @@ public class UserDao extends BaseDao {
     public void updateField(long userId, String field, Object value) {
         String sql = "UPDATE users SET " + field + " = ? WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setObject(1, value);
             ps.setLong(2, userId);
             ps.executeUpdate();
@@ -215,7 +215,7 @@ public class UserDao extends BaseDao {
     public void incrementField(long userId, String field, int amount) {
         String sql = "UPDATE users SET " + field + " = " + field + " + ? WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, amount);
             ps.setLong(2, userId);
             ps.executeUpdate();
@@ -226,7 +226,7 @@ public class UserDao extends BaseDao {
     
     public void updatePlayerTitle(long userId, int titleId, int targetId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("UPDATE users SET player_title_id = ?, player_title_target_id = ? WHERE user_id = ?")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "UPDATE users SET player_title_id = ?, player_title_target_id = ? WHERE user_id = ?")) {
             ps.setInt(1, titleId);
             ps.setInt(2, targetId);
             ps.setLong(3, userId);
@@ -239,7 +239,7 @@ public class UserDao extends BaseDao {
     public void unlockChapter(long userId, int chapterId) {
         String sql = "INSERT OR IGNORE INTO user_chapters (user_id, chapter_id, status) VALUES (?, ?, 1)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, chapterId);
             ps.executeUpdate();
@@ -252,7 +252,7 @@ public class UserDao extends BaseDao {
         java.util.List<Integer> chapters = new java.util.ArrayList<>();
         String sql = "SELECT chapter_id FROM user_chapters WHERE user_id = ? AND status = 1";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -268,7 +268,7 @@ public class UserDao extends BaseDao {
     public void unlockChapterGroup(long userId, int chapterGroupId, long expiresAt) {
         String sql = "INSERT OR REPLACE INTO user_chapter_expires (user_id, chapter_group_id, expires_at) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, chapterGroupId);
             ps.setLong(3, expiresAt);
@@ -282,7 +282,7 @@ public class UserDao extends BaseDao {
         java.util.Map<Integer, Long> map = new java.util.HashMap<>();
         String sql = "SELECT chapter_group_id, expires_at FROM user_chapter_expires WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -298,7 +298,7 @@ public class UserDao extends BaseDao {
     public void updateOptions(long userId, int bgm, int se, int voice, int protectCardR6, int protectCardR5, int protectCardFirst) {
         String sql = "UPDATE users SET option_bgm = ?, option_se = ?, option_voice = ?, option_protect_card_r6 = ?, option_protect_card_r5 = ?, option_protect_card_first = ? WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, bgm);
             ps.setInt(2, se);
             ps.setInt(3, voice);
@@ -314,7 +314,7 @@ public class UserDao extends BaseDao {
 
     public void initializeStamina(long userId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("INSERT OR IGNORE INTO user_stamina (user_id) VALUES (?)")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "INSERT OR IGNORE INTO user_stamina (user_id) VALUES (?)")) {
             ps.setLong(1, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -324,7 +324,7 @@ public class UserDao extends BaseDao {
 
     public void giveItem(long userId, int itemId, int qty) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "INSERT INTO user_items (user_id, item_id, quantity) VALUES (?, ?, ?) " +
                              "ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + ?")) {
             ps.setLong(1, userId);
@@ -340,7 +340,7 @@ public class UserDao extends BaseDao {
     public void ensureDefaultCards(long userId, int[] cardIds) {
         try (Connection conn = DatabaseManager.getInstance().getConnection()) {
             String sql = "INSERT OR IGNORE INTO user_cards (user_id, card_id, level, exp, awaken_level, skill_level, is_new) VALUES (?, ?, 1, ?, 0, 1, 0)";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
                 for (int cardId : cardIds) {
                     int exp = 1; // Default fallback
                     com.emu.tqqserver.data.resources.CardDef cardDef = com.emu.tqqserver.data.GameData.getCardDataTable().get(cardId);
@@ -369,7 +369,7 @@ public class UserDao extends BaseDao {
 
     public void updateCardExpAndLevel(long cardId, int newExp, int newLevel) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("UPDATE user_cards SET exp = ?, level = ? WHERE id = ?")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "UPDATE user_cards SET exp = ?, level = ? WHERE id = ?")) {
             ps.setInt(1, newExp);
             ps.setInt(2, newLevel);
             ps.setLong(3, cardId);
@@ -387,7 +387,7 @@ public class UserDao extends BaseDao {
             if (i < cardIds.size() - 1) placeholders.append(",");
         }
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM user_cards WHERE id IN (" + placeholders + ")")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "DELETE FROM user_cards WHERE id IN (" + placeholders + ")")) {
             for (int i = 0; i < cardIds.size(); i++) {
                 ps.setLong(i + 1, cardIds.get(i));
             }
@@ -400,7 +400,7 @@ public class UserDao extends BaseDao {
     public List<CardEntity> getUserCards(long userId) {
         List<CardEntity> cards = new ArrayList<>();
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT id, card_id, level, exp, skill_level, awaken_level FROM user_cards WHERE user_id = ?")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT id, card_id, level, exp, skill_level, awaken_level FROM user_cards WHERE user_id = ?")) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

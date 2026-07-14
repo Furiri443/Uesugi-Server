@@ -19,7 +19,7 @@ public class MemberDao extends BaseDao {
     /** Initialize members for a new user */
     public void initializeMembers(long userId) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "INSERT OR IGNORE INTO user_members (user_id, member_id, dear_level, likability) VALUES (?, ?, 1, 1)")) {
             for (int i = 1; i <= 5; i++) {
                 ps.setLong(1, userId);
@@ -35,7 +35,7 @@ public class MemberDao extends BaseDao {
     /** Save or update a member's affection */
     public void updateMember(long userId, int memberId, int dearLevel, int likability) {
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, 
                      "UPDATE user_members SET dear_level = ?, likability = ? WHERE user_id = ? AND member_id = ?")) {
             ps.setInt(1, dearLevel);
             ps.setInt(2, likability);
@@ -51,7 +51,7 @@ public class MemberDao extends BaseDao {
     public List<Member> getMembers(long userId) {
         List<Member> members = new ArrayList<>();
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM user_members WHERE user_id = ? ORDER BY member_id ASC")) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "SELECT * FROM user_members WHERE user_id = ? ORDER BY member_id ASC")) {
 
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {

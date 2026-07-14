@@ -18,7 +18,7 @@ public class HomeService {
     public void updateHomeBackground(long userId, int backgroundId) {
         String sql = "UPDATE users SET home_background_id = ? WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, backgroundId);
             ps.setLong(2, userId);
             ps.executeUpdate();
@@ -31,7 +31,7 @@ public class HomeService {
         List<HomeActor> actors = new ArrayList<>();
         String sql = "SELECT character_id, model_kind_id, clothes_id, position FROM user_home_actors WHERE user_id = ? ORDER BY character_id ASC";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -69,7 +69,7 @@ public class HomeService {
     public void saveHomeActors(long userId, List<HomeActor> actors) {
         String sql = "INSERT OR REPLACE INTO user_home_actors (user_id, character_id, model_kind_id, clothes_id, position) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             for (HomeActor actor : actors) {
                 ps.setLong(1, userId);
                 ps.setInt(2, actor.getCharacterId());

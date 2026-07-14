@@ -155,7 +155,7 @@ public class UserService {
     public boolean deductCurrency(long userId, int coinAmount, int jewelAmount) {
         String sql = "UPDATE users SET coin = coin - ?, jewel = jewel - ? WHERE user_id = ? AND coin >= ? AND jewel >= ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, coinAmount);
             ps.setInt(2, jewelAmount);
             ps.setLong(3, userId);
@@ -171,7 +171,7 @@ public class UserService {
     public boolean deductJewels(long userId, int freeJewel, int paidJewel) {
         String sql = "UPDATE users SET jewel = jewel - ?, pay_jewel = pay_jewel - ? WHERE user_id = ? AND jewel >= ? AND pay_jewel >= ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, freeJewel);
             ps.setInt(2, paidJewel);
             ps.setLong(3, userId);
@@ -187,7 +187,7 @@ public class UserService {
     public void addItem(long userId, int itemId, int quantity) {
         String sql = "INSERT INTO user_items (user_id, item_id, quantity) VALUES (?, ?, ?) ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + ?, updated_at = strftime('%s','now')";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, itemId);
             ps.setInt(3, quantity);
@@ -201,7 +201,7 @@ public class UserService {
     public boolean deductItem(long userId, int itemId, int quantity) {
         String sql = "UPDATE user_items SET quantity = quantity - ?, updated_at = strftime('%s','now') WHERE user_id = ? AND item_id = ? AND quantity >= ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, quantity);
             ps.setLong(2, userId);
             ps.setInt(3, itemId);
@@ -217,7 +217,7 @@ public class UserService {
         List<com.emu.tqqserver.proto.pkg_puser.Item> items = new java.util.ArrayList<>();
         String sql = "SELECT item_id, quantity FROM user_items WHERE user_id = ? AND quantity > 0";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             java.sql.ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -237,7 +237,7 @@ public class UserService {
         try (java.sql.Connection conn = com.emu.tqqserver.db.DatabaseManager.getInstance().getConnection()) {
             String[] tables = {"user_units", "user_members", "user_cards", "user_items", "user_stamina", "user_blocks", "user_friends", "user_presents", "user_stories", "user_home_actors", "user_stages", "user_home_backgrounds", "user_clothes", "user_functutorials", "users"};
             for(String t : tables) {
-                try(java.sql.PreparedStatement ps = conn.prepareStatement("DELETE FROM " + t + " WHERE user_id = ?")) {
+                try(java.sql.PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, "DELETE FROM " + t + " WHERE user_id = ?")) {
                     ps.setLong(1, userId);
                     ps.executeUpdate();
                 } catch (Exception ex) {

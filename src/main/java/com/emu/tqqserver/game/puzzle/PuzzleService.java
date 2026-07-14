@@ -45,7 +45,7 @@ public class PuzzleService {
         // Deduct AP (Stamina)
         String sql = "UPDATE user_stamina SET current_stamina = MAX(0, current_stamina - ?) WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setInt(1, cost);
             ps.setLong(2, userId);
             ps.executeUpdate();
@@ -164,7 +164,7 @@ public class PuzzleService {
     private boolean isFirstClear(long userId, int stageId) {
         String sql = "SELECT clear_count FROM user_stages WHERE user_id = ? AND stage_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, stageId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -179,7 +179,7 @@ public class PuzzleService {
     private boolean hasRankS(long userId, int stageId) {
         String sql = "SELECT stars FROM user_stages WHERE user_id = ? AND stage_id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, stageId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -194,7 +194,7 @@ public class PuzzleService {
     private void initializeStamina(long userId) {
         String insertSql = "INSERT OR IGNORE INTO user_stamina (user_id, current_stamina, max_stamina, last_recover_at) VALUES (?, 60, 60, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, insertSql)) {
             ps.setLong(1, userId);
             ps.setLong(2, System.currentTimeMillis() / 1000);
             ps.executeUpdate();
@@ -212,7 +212,7 @@ public class PuzzleService {
                      "cleared_at = EXCLUDED.cleared_at";
 
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, sql)) {
             ps.setLong(1, userId);
             ps.setInt(2, stageId);
             ps.setInt(3, stars);
@@ -230,7 +230,7 @@ public class PuzzleService {
             int currentRank = 1;
             int currentExp = 0;
 
-            try (PreparedStatement psSel = conn.prepareStatement(selectSql)) {
+            try (PreparedStatement psSel = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, selectSql)) {
                 psSel.setLong(1, userId);
                 try (ResultSet rs = psSel.executeQuery()) {
                     if (rs.next()) {
@@ -255,7 +255,7 @@ public class PuzzleService {
             }
 
             String updateSql = "UPDATE users SET rank = ?, exp = ? WHERE user_id = ?";
-            try (PreparedStatement psUpd = conn.prepareStatement(updateSql)) {
+            try (PreparedStatement psUpd = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, updateSql)) {
                 psUpd.setInt(1, newRank);
                 psUpd.setInt(2, newExp);
                 psUpd.setLong(3, userId);
@@ -266,7 +266,7 @@ public class PuzzleService {
                 log.info("User {} ranked up! New rank: {}", userId, newRank);
                 // Recover full stamina on level up
                 String recoverSql = "UPDATE user_stamina SET current_stamina = max_stamina WHERE user_id = ?";
-                try (PreparedStatement psRec = conn.prepareStatement(recoverSql)) {
+                try (PreparedStatement psRec = com.emu.tqqserver.db.DatabaseManager.getInstance().prepareStatement(conn, recoverSql)) {
                     psRec.setLong(1, userId);
                     psRec.executeUpdate();
                 }
