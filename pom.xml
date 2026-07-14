@@ -130,6 +130,7 @@
                                 </transformer>
                             </transformers>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <outputFile>${project.basedir}/UesugiServer.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>

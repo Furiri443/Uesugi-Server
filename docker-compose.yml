@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  tqq-server:
+    build: .
+    container_name: tqq-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config.json:/app/config.json
+      - ./gotopazu:/app/gotopazu
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Map your android CDN folder here if you host assets directly
+      - /path/to/your/android/cdn:/app/android
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: tqq-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: your_root_password
+      MARIADB_DATABASE: gotopazu
+    ports:
+      - "3306:3306"
+    volumes:
+      - tqq_db_data:/var/lib/mysql
+
+volumes:
+  tqq_db_data:
