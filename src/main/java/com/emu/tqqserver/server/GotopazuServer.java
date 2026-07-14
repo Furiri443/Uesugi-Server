@@ -73,6 +73,7 @@ public class GotopazuServer {
         com.emu.tqqserver.game.notice.NoticeService.initialize(config.getResourceListDir());
 
         com.emu.tqqserver.console.ConsoleCommandManager.startConsoleThread();
+        com.emu.tqqserver.utils.HandbookGenerator.generateHandbook();
 
         EventLoopGroup boss   = new NioEventLoopGroup(1);
         EventLoopGroup worker = new NioEventLoopGroup();
