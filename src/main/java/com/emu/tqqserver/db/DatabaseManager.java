@@ -64,6 +64,7 @@ public class DatabaseManager {
         String res = sql;
         res = res.replaceAll("(?i)\\bAUTOINCREMENT\\b", "AUTO_INCREMENT");
         res = res.replaceAll("(?i)\\bINSERT OR IGNORE INTO\\b", "INSERT IGNORE INTO");
+        res = res.replaceAll("(?i)\\bINSERT OR REPLACE INTO\\b", "REPLACE INTO");
         res = res.replaceAll("(?i)\\bON CONFLICT\\s*\\([^)]+\\)\\s*DO UPDATE SET\\b", "ON DUPLICATE KEY UPDATE");
         res = res.replaceAll("(?i)\\bEXCLUDED\\.([a-zA-Z0-9_]+)", "VALUES($1)");
         res = res.replaceAll("(?i)strftime\\('%s','now'\\)", "UNIX_TIMESTAMP()");
